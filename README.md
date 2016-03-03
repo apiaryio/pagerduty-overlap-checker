@@ -2,7 +2,7 @@
 
 ## Usage
 
-1. Create config file `~/.pagerduty`
+1. Create config file `config.json`
 
 ```json
 {
