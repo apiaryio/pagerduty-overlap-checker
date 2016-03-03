@@ -1,7 +1,7 @@
 {
-  "name": "pageduty-overrides",
+  "name": "pagerduty-overlap-checker",
   "version": "1.0.0",
-  "description": "",
+  "description": "PagerDuty Overlap Duties Checker",
   "main": "lib/",
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\"",
