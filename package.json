@@ -1,0 +1,25 @@
+{
+  "name": "pageduty-overrides",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\"",
+    "prepublish": "scripts/build"
+  },
+  "author": "Apiary Inc <support@apiary.io>",
+  "license": "MIT",
+  "dependencies": {
+    "async": "1.5.2",
+    "commander": "2.9.0",
+    "debug": "2.2.0",
+    "nconf": "0.8.4",
+    "request": "2.69.0",
+    "underscore": "1.8.3"
+  },
+  "devDependencies": {
+    "coffee-script": "1.10.0",
+    "mocha": "",
+    "chai": ""
+  }
+}

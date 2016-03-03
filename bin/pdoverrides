@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var pjson = require('../package.json');
+
+program
+  .version(pjson.version)
+  .parse(process.argv);
+
+console.log(program.version());
+console.log(program.argv);
