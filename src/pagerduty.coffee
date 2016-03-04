@@ -74,7 +74,7 @@ processSchedulesFromConfig = (cb) ->
   configSchedules = nconf.get('SCHEDULES')
   debug('configSchedules', configSchedules[0])
   # here just take first schedules
-  async.map configSchedules[0], (i, next) ->
+  async.map configSchedules[0]['SCHEDULE'], (i, next) ->
     getSchedule i, next
   , (err, results) ->
     processSchedules results, (err, message) ->
