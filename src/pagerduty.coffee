@@ -55,13 +55,17 @@ getSchedulesIds = (cb) ->
 
 # Check if all schedules defined in config are available in PD
 checkSchedulesIds = (cb) ->
-  configSchedules = _.flatten(nconf.get('SCHEDULES'))
-  debug("Schedules Ids from config: ", configSchedules)
+  configSchedules = nconf.get('SCHEDULES')
+  listIds = []
+  for ids in configSchedules
+    listIds.push ids['SCHEDULE']
+  debug("Schedules Ids from config: ", _.flatten(listIds))
+  configSchedulesIds =  _.flatten(listIds)
   getSchedulesIds (err, schedulesIds) ->
     if err then return cb err
-    debug('intersection: ', _.intersection(configSchedules, schedulesIds).length)
-    debug('config: ', configSchedules.length)
-    if (_.intersection(configSchedules, schedulesIds).length) is configSchedules.length
+    debug('intersection: ', _.intersection(configSchedulesIds, schedulesIds).length)
+    debug('config: ', configSchedulesIds.length)
+    if (_.intersection(configSchedulesIds, schedulesIds).length) is configSchedulesIds.length
       cb null, true
     else
       cb null, false
@@ -100,11 +104,11 @@ processSchedules = (allSchedules, cb) ->
             message = """Overlapping duty found for user #{myUserName}
               from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
             messages.push message
-  debug(messages)
+  debug(_.uniq(messages))
   if messages.length is 0
     cb null, "OK"
   else
-    cb null, messages
+    cb null, _.uniq(messages)
 
 module.exports = {
   pdGet

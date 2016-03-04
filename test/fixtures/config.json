@@ -1,14 +1,10 @@
 {
-  "PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
-  "PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
-  "PAGERDUTY_TOKEN": "E7px6VVr3PVHZPJq51oa",
-  "SLACK_HOOK_URL": "https://acme.slack.com/xxx",
-  "SCHEDULES":
-    [
-        ["PWEVPB6", "PT57OLG"]
-    ],
-  "NOTIFICATIONS": {
-    "SLACK": "1",
-    "PAGERDUTY_INCIDENT": "1"
-  }
+	"PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
+	"PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
+	"SCHEDULES": [{
+		"SCHEDULE": ["PWEVPB6", "PT57OLG"],
+		"NOTIFICATIONS": {
+			"PAGERDUTY_TOKEN": "E7px6VVr3PVHZPJq51oa"
+		}
+	}]
 }

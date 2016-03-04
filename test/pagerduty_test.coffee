@@ -1,6 +1,7 @@
 {assert} = require 'chai'
 nock     = require 'nock'
 nconf    = require 'nconf'
+debug    = require('debug')('pagerduty-overrides:tests')
 
 config   = require '../src/config'
 pd       = require '../src/pagerduty'
@@ -92,4 +93,5 @@ describe 'Compare schedules', ->
     assert.isArray message
     assert.lengthOf message, 4
     for singleMessage in message
+      debug(singleMessage)
       assert.include singleMessage, 'Overlapping duty found for user'
