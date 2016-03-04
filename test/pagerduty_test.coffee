@@ -58,3 +58,31 @@ describe 'Check schedules with wrong config', ->
 
   it 'Check if config ids are in pagerduty schedules', ->
     assert.notOk schedules
+
+describe 'Compare schedules', ->
+
+  message = null
+
+  before (done) ->
+    config.setupConfig(configPath)
+
+    nock('https://acme.pagerduty.com/api/v1')
+      .get('/schedules')
+      .replyWithFile(200, __dirname + '/fixtures/schedules.json')
+
+    nock('https://acme.pagerduty.com/api/v1')
+      .get('/schedules/undefined/entries')
+      .replyWithFile(200, __dirname + '/fixtures/entries.json')
+
+
+    pd.checkSchedulesIds (err, res) ->
+      if err then return done err
+      unless res
+        return done new Error("Check failed")
+      pd.processSchedulesFromConfig (err, msg) ->
+        if err then return done err
+        message = msg
+        done err
+
+  it 'Test message', ->
+    assert.equal message, 'OK'

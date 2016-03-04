@@ -1,7 +1,7 @@
 {assert} = require 'chai'
-config   = require '../src/config'
+config   = require '../../src/config'
 nconf    = require 'nconf'
-pd       = require '../src/pagerduty'
+pd       = require '../../src/pagerduty'
 
 configPath = __dirname + '/../../config.json'
 
