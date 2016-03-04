@@ -5,7 +5,8 @@
   "SLACK_HOOK_URL": "https://acme.slack.com/xxx",
   "SCHEDULES":
     [
-        ["PWEVPB6", "PT57OLG"]
+        ["PWEVPB6", "PT57OLG"],
+        ["PWEVP16", "PT571LG"]
     ],
   "NOTIFICATIONS": {
     "SLACK": "1",
