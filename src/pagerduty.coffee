@@ -68,19 +68,23 @@ checkSchedulesIds = (cb) ->
 
 processSchedulesFromConfig = (cb) ->
   configSchedules = nconf.get('SCHEDULES')
-  async.map configSchedules, (i, next) ->
-    getSchedule i.id, next
+  debug('configSchedules', configSchedules[0])
+  # here just take first schedules
+  async.map configSchedules[0], (i, next) ->
+    getSchedule i, next
   , (err, results) ->
-    debug(results)
-    cb null, results
+    processSchedules results, (err, message) ->
+      cb null, message
 
 processSchedules = (allSchedules, cb) ->
   schedulesMap = {}
-
+  messages = []
+  debug('allSchedules:', allSchedules)
   for schedule in allSchedules
+    debug('schedule:', schedule)
     otherSchedules = _.without(allSchedules, schedule)
-
-    for entry in schedulesMap[schedule.id]
+    debug('otherSchedules:',otherSchedules)
+    for entry in schedule.entries
       myStart = entry.start
       debug(myStart)
       myEnd = entry.end
@@ -90,17 +94,17 @@ processSchedules = (allSchedules, cb) ->
       myUserName = entry.user.name
       debug(myUserName)
       for crossSchedule in otherSchedules
-        for crossCheckEntry in schedulesMap[crossSchedule.id]
+        for crossCheckEntry in crossSchedule.entries
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId
             message = """Overlapping duty found for user #{myUserName}
               from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
-            console.log message
-#
-# sendNotification = (message, cb) ->
-#   debug('sendNotification: ', message)
-#   cb()
-
+            messages.push message
+  debug(messages)
+  if messages.length is 0
+    cb null, "OK"
+  else
+    cb null, messages
 
 module.exports = {
   pdGet

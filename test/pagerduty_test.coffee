@@ -71,7 +71,11 @@ describe 'Compare schedules', ->
       .replyWithFile(200, __dirname + '/fixtures/schedules.json')
 
     nock('https://acme.pagerduty.com/api/v1')
-      .get('/schedules/undefined/entries')
+      .get('/schedules/PWEVPB6/entries')
+      .replyWithFile(200, __dirname + '/fixtures/entries.json')
+
+    nock('https://acme.pagerduty.com/api/v1')
+      .get('/schedules/PT57OLG/entries')
       .replyWithFile(200, __dirname + '/fixtures/entries.json')
 
 
@@ -84,5 +88,8 @@ describe 'Compare schedules', ->
         message = msg
         done err
 
-  it 'Test message', ->
-    assert.equal message, 'OK'
+  it 'Check returned messages if containes "Overlapping duty found for user"', ->
+    assert.isArray message
+    assert.lengthOf message, 4
+    for singleMessage in message
+      assert.include singleMessage, 'Overlapping duty found for user'
