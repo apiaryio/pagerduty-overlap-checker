@@ -3,6 +3,7 @@ request   = require 'request'
 nconf     = require 'nconf'
 _         = require 'underscore'
 debug     = require('debug')('pagerduty-overrides')
+notify    = require './notify'
 
 # Factory for sending request to PD API
 pdGet = (endpointPath, overrideOptions, cb) ->
@@ -72,13 +73,22 @@ checkSchedulesIds = (cb) ->
 
 processSchedulesFromConfig = (cb) ->
   configSchedules = nconf.get('SCHEDULES')
-  debug('configSchedules', configSchedules[0])
-  # here just take first schedules
-  async.map configSchedules[0]['SCHEDULE'], (i, next) ->
-    getSchedule i, next
-  , (err, results) ->
-    processSchedules results, (err, message) ->
-      cb null, message
+  debug('configSchedules', configSchedules.length)
+  end = configSchedules.length - 1
+  for index in [0..end]
+    async.map configSchedules[index]['SCHEDULE'], (i, next) ->
+      getSchedule i, next
+    , (err, results) ->
+      processSchedules results, (err, message) ->
+        if configSchedules[index]?['NOTIFICATIONS']
+          sendNotification configSchedules[index]['NOTIFICATIONS'], message
+        cb null, message
+
+sendNotification = (options, message) ->
+  debug("NOTIFICATIONS:", message)
+  debug("NOTIFICATIONS-OPTIONS:", options)
+  notify.send options, message, (err) ->
+    if err then console.error "Notification failed."
 
 processSchedules = (allSchedules, cb) ->
   schedulesMap = {}
@@ -116,4 +126,5 @@ module.exports = {
   checkSchedulesIds
   processSchedules
   processSchedulesFromConfig
+  sendNotification
 }

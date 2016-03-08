@@ -1,8 +1,9 @@
+Slack     = require 'node-slackr'
+nconf     = require 'nconf'
 request   = require 'request'
 debug     = require('debug')('pagerduty-overrides:notifications')
 
 createPagerDutyIncident = (options, message, cb) ->
-  details    ?= {}
   debug("Creating PD incident #{options.description}")
 
   unless options.serviceKey
@@ -27,10 +28,19 @@ createPagerDutyIncident = (options, message, cb) ->
         debug("INCIDENT_CREATION_FAILED: ", err)
       cb err
 
+# https://www.npmjs.com/package/node-slackr
+createSlackMessage = (options, message, cb) ->
+  if options.webhookUrl
+    slack = new Slack(options.webhookUrl)
+    slack.notify message, (err, result) ->
+      if err then return cb err
+      cb null, result
+  else
+    cb new Error "Missing Slack webhook URL."
 
-notify = (options, message, cb) ->
-  createPagerDutyIncident options, message, cb
+send = (options, message, cb) ->
+  createSlackMessage options, message, cb
 
 module.exports = {
-  notify
+  send
 }
