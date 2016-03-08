@@ -27,3 +27,12 @@
 	}]
 }
 ```
+
+2. Run command and check:
+
+```sh
+$ ./bin/pdoverrides check --config config.json
+
+Config schedule IDs passed.
+OK
+```
