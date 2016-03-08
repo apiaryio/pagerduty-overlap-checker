@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "PagerDuty Overlap Duties Checker",
   "main": "lib/",
+  "bin": {
+    "pdoverrides": "bin/pdoverrides"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\"",
     "integration": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\" --recursive",
