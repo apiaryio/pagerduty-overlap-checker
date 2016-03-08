@@ -1,0 +1,6 @@
+src
+test
+README.md
+example.coffee
+coffeelint.json
+.travis.yml
