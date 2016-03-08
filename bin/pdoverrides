@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+var debug = require('debug');
 var program = require('commander');
 var fs = require('fs');
 var pjson = require('../package.json');
@@ -13,28 +13,26 @@ program
   .action(runCheck);
 
 function runCheck(configFile) {
-  if (fs.existsSync(configFile)) {
-    console.error('Missing config.json');
-    process.exit(1);
-  } else {
-    config.setupConfig(configFile, function(error, res){
-      if (error) {
-        console.error(error);
-        process.exit(1);
-      }
-      pd.checkSchedulesIds(function(error, res) {
-        if (!res) {
-            console.error("Check failed");
-            process.exit(1);
-        } else {
-          pd.processSchedulesFromConfig(function(error, msg) {
-            console.log(msg);
-          });
-        }
-      });
-      process.exit(0);
-    })
-  }
+  fs.access(configFile, fs.R_OK , (err) => {
+    if (err) throw err;
+     config.setupConfig(configFile, function(error, res){
+       if (error) {
+         console.error(error);
+         process.exit(1);
+       }
+       pd.checkSchedulesIds(function(error, res) {
+         if (!res) {
+             console.error("Check failed");
+             process.exit(1);
+         } else {
+           pd.processSchedulesFromConfig(function(error, msg) {
+             console.log(msg);
+           });
+         }
+       });
+       process.exit(0);
+     });
+   });
 };
 
 program
