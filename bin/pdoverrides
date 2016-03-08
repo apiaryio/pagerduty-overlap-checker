@@ -15,9 +15,9 @@ program
 function runCheck(configFile) {
   fs.access(configFile, fs.R_OK , (err) => {
     if (err) throw err;
-     config.setupConfig(configFile, function(error, res){
-       if (error) {
-         console.error(error);
+     config.setupConfig(configFile, function(err, res){
+       if (err) {
+         console.error(err);
          process.exit(1);
        }
        pd.checkSchedulesIds(function(error, res) {
@@ -25,12 +25,13 @@ function runCheck(configFile) {
              console.error("Check failed");
              process.exit(1);
          } else {
+           console.log("Config schedule IDs passed.")
            pd.processSchedulesFromConfig(function(error, msg) {
              console.log(msg);
+             process.exit(0);
            });
          }
        });
-       process.exit(0);
      });
    });
 };
@@ -38,7 +39,7 @@ function runCheck(configFile) {
 program
     .version(pjson.version)
     .usage('check --config <path/to/config.json>')
-    .option('-c', '--config', 'Path to config.json')
+    .option('-c, --config', 'Path to config.json')
     .parse(process.argv);
 
 // default help
