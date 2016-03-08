@@ -13,8 +13,9 @@ describe 'Get config for PagerDuty Overrides', ->
 
 describe 'Setup config and get config', ->
 
-  before ->
-    config.setupConfig(__dirname + '/fixtures/config.json')
+  before (done) ->
+    config.setupConfig __dirname + '/fixtures/config.json', (err) ->
+      done err
 
   it 'NODE_ENV isn\'t set', ->
     assert.equal nconf.get('NODE_ENV'), undefined
