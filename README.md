@@ -1,5 +1,10 @@
 [![Build Status](https://travis-ci.org/apiaryio/pagerduty-overlap-checker.svg?branch=master)](https://travis-ci.org/apiaryio/pagerduty-overlap-checker)
 
+# NodeJS supported versions
+
+- 4.3 (LTS)
+- 5.x latest
+
 # Pager Duty Overrides Checker
 
 ## Usage
