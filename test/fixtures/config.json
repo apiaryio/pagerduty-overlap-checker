@@ -4,7 +4,7 @@
 	"SCHEDULES": [{
 		"SCHEDULE": ["PWEVPB6", "PT57OLG"],
 		"NOTIFICATIONS": {
-			"PAGERDUTY_TOKEN": "E7px6VVr3PVHZPJq51oa"
+			"SLACK_WEBHOOK_URL": "https://incomingUrl/"
 		}
 	}]
 }

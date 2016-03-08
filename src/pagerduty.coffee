@@ -80,7 +80,7 @@ processSchedulesFromConfig = (cb) ->
       getSchedule i, next
     , (err, results) ->
       processSchedules results, (err, message) ->
-        if configSchedules[index]?['NOTIFICATIONS']
+        if configSchedules[index]?['NOTIFICATIONS'] && message isnt "OK"
           sendNotification configSchedules[index]['NOTIFICATIONS'], message
         cb null, message
 

@@ -39,7 +39,18 @@ createSlackMessage = (options, message, cb) ->
     cb new Error "Missing Slack webhook URL."
 
 send = (options, message, cb) ->
-  createSlackMessage options, message, cb
+  debug('send:', options, message)
+  if options['SLACK_WEBHOOK_URL']?
+    slackOptions = {}
+    slackOptions.webhookUrl = options['SLACK_WEBHOOK_URL']
+    createSlackMessage slackOptions, message, cb
+  if options['PAGERDUTY_TOKEN']?
+    pdOptions = {}
+    pdOptions.serviceKey = options['PAGERDUTY_TOKEN']
+    pdOptions.description = message
+    pdOptions.details =
+      subject: "PagerDuty overlap incident"
+    createPagerDutyIncident pdOptions, message, cb
 
 module.exports = {
   send
