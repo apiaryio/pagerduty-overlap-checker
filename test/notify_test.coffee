@@ -9,7 +9,7 @@ notify   = require '../src/notify'
 configPath = __dirname + '/fixtures/config.json'
 
 # https://github.com/chenka/node-slackr/blob/master/test/index.coffee
-describe 'Test send message using notify.send', ->
+describe 'Test send message using notify.send for both', ->
 
   actual = null
 
@@ -22,6 +22,10 @@ describe 'Test send message using notify.send', ->
     config.setupConfig configPath, (err) ->
       if err then return done err
       nock('https://incomingUrl').post("/", expectBody)
+      .reply(200, 'ok')
+
+      nock('https://events.pagerduty.com')
+      .post("/generic/2010-04-15/create_event.json")
       .reply(200, 'ok')
 
       configSchedules = nconf.get('SCHEDULES')

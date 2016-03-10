@@ -1,5 +1,6 @@
 Slack     = require 'node-slackr'
 nconf     = require 'nconf'
+async     = require 'async'
 request   = require 'request'
 debug     = require('debug')('pagerduty-overrides:notifications')
 
@@ -49,17 +50,29 @@ formatMessage = (messages, option = 'plain') ->
 
 send = (options, message, cb) ->
   debug('send:', options, message)
-  if options['SLACK_WEBHOOK_URL']?
-    slackOptions = {}
-    slackOptions.webhookUrl = options['SLACK_WEBHOOK_URL']
-    createSlackMessage slackOptions, formatMessage(message), cb
-  if options['PAGERDUTY_TOKEN']?
-    pdOptions = {}
-    pdOptions.serviceKey = options['PAGERDUTY_TOKEN']
-    pdOptions.description = message
-    pdOptions.details =
-      subject: "PagerDuty overlap incident"
-    createPagerDutyIncident pdOptions, formatMessage(message), cb
+
+  async.series [
+    (next) ->
+        if options['SLACK_WEBHOOK_URL']?
+          slackOptions = {}
+          slackOptions.webhookUrl = options['SLACK_WEBHOOK_URL']
+          createSlackMessage slackOptions, formatMessage(message), next
+        else
+          next()
+    (next) ->
+      if options['PAGERDUTY_TOKEN']?
+        pdOptions = {}
+        pdOptions.serviceKey = options['PAGERDUTY_TOKEN']
+        pdOptions.description = message
+        pdOptions.details =
+          subject: "PagerDuty overlap incident"
+        createPagerDutyIncident pdOptions, formatMessage(message), next
+      else
+        next()
+  ], (err, results) ->
+    if err then return cb err
+    output = results.filter (n) -> n isnt undefined
+    cb null, output
 
 module.exports = {
   send
