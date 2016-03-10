@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/apiaryio/pagerduty-overlap-checker.svg?branch=master)](https://travis-ci.org/apiaryio/pagerduty-overlap-checker)
+[![Coverage Status](https://coveralls.io/repos/github/apiaryio/pagerduty-overlap-checker/badge.svg?branch=master)](https://coveralls.io/github/apiaryio/pagerduty-overlap-checker?branch=master)
 
 # NodeJS supported versions
 

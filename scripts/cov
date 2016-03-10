@@ -22,7 +22,7 @@ chmod +x ./src-cov/bin/*
 # Testing
 echo "Testing..."
 find ./src-cov/test/ -name '*-test.coffee' | xargs "$MOCHA" \
-  --reporter='mocha-lcov-reporter'
+  --reporter='mocha-lcov-reporter' >> ./cov.info 2>&1
 
 # Output & cleanup
 rm -rf ./src-cov ./lcov
