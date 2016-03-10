@@ -11,9 +11,9 @@
 
 1. Create config file `config.json`
 
-- `PAGERDUTY_READ_ONLY_TOKEN` is used for read schedules and check them.
-- `SCHEDULES` array can contains one or more `SCHEDULE` to check
-- every `SCHEDULE` have `PAGERDUTY_TOKEN` to create incident if overlap is found
+- `PAGERDUTY_READ_ONLY_TOKEN` is used for reading schedules and checking the overlaps.
+- `SCHEDULES` array can contain one or more `SCHEDULE` items to check
+- every `SCHEDULE` should have a `PAGERDUTY_TOKEN` to create incident if overlap is found
 
 ```json
 {
