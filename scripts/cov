@@ -1,0 +1,28 @@
+#!/bin/sh
+# Usage:
+# ./scripts/cov [reporter]
+#
+# Example:
+# ./scripts/cov html-cov > cov.html
+
+COV=./node_modules/coffee-coverage/bin/coffeecoverage
+MOCHA=./node_modules/.bin/mocha
+
+# Cleanup & preparation
+rm -rf ./src-cov ./lcov ./cov.info
+mkdir ./src-cov ./lcov
+
+# Creating directory with instrumented JS code
+$COV --exclude node_modules,.git,test --path=relative . ./src-cov
+cp ./package.json ./src-cov
+cp -r ./test ./src-cov/test
+cp -r ./bin ./src-cov/bin
+chmod +x ./src-cov/bin/*
+
+# Testing
+echo "Testing..."
+find ./src-cov/test/ -name '*-test.coffee' | xargs "$MOCHA" \
+  --reporter='mocha-lcov-reporter' >> ./cov.info 2>&1
+
+# Output & cleanup
+rm -rf ./src-cov ./lcov
