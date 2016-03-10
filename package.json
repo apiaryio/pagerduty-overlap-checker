@@ -1,6 +1,6 @@
 {
   "name": "pagerduty-overlap-checker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PagerDuty Overlap Duties Checker",
   "main": "lib/",
   "bin": {
@@ -18,6 +18,15 @@
   },
   "author": "Apiary Inc <support@apiary.io>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apiaryio/pagerduty-overlap-checker"
+  },
+  "keywords": [
+    "pagerduty",
+    "checker",
+    "check"
+  ],
   "dependencies": {
     "async": "1.5.2",
     "commander": "2.9.0",
