@@ -21,6 +21,7 @@ Current are supported only Slack (`SLACK_WEBHOOK_URL`) and PagerDuty (`PAGERDUTY
 {
 	"PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
 	"PAGERDUTY_READ_ONLY_TOKEN": "33333333333333333333",
+	"WEEKS_TO_CHECK": 2,
 	"SCHEDULES": [{
 		"SCHEDULE": ["PWEVPB6", "PT57OLG"],
 		"NOTIFICATIONS": {

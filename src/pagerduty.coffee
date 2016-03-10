@@ -26,21 +26,24 @@ pdGet = (endpointPath, overrideOptions, cb) ->
 
 # Get schedule for ID and 2 weeks
 getSchedule = (id, cb) ->
-  week = 7 * 86400 * 1000
-  timeNow = new Date()
-  timeUntil = new Date(timeNow.getTime() + 2 * week)
+  if nconf.get('WEEKS_TO_CHECK') > 0
+    week = 7 * 86400 * 1000
+    timeNow = new Date()
+    timeUntil = new Date(timeNow.getTime() + nconf.get('WEEKS_TO_CHECK') * week)
 
-  scheduleOpts =
-    form:
-      until: timeUntil.toISOString()
-      since: timeNow.toISOString()
+    scheduleOpts =
+      form:
+        until: timeUntil.toISOString()
+        since: timeNow.toISOString()
 
-  pdGet "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
-    if res.statusCode isnt 200 then return cb new Error(
-      "Entries returned status code #{res.statusCode}"
-    )
+    pdGet "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
+      if res.statusCode isnt 200 then return cb new Error(
+        "Entries returned status code #{res.statusCode}"
+      )
 
-    cb err, id: id, entries: body.entries
+      cb err, id: id, entries: body.entries
+  else
+    cb new Error "Missing WEEKS_TO_CHECK settings"
 
 # Get all schedules and returns their ids
 getSchedulesIds = (cb) ->
