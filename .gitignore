@@ -5,3 +5,7 @@ lib/
 *.log
 !test/fixtures/config.json
 config.json
+/src-cov
+/lcov
+cov.info
+cov.html

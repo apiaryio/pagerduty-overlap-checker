@@ -1,4 +1,4 @@
-{assert} = require 'chai'
+assert   = require('chai').assert
 config   = require '../src/config'
 nconf    = require 'nconf'
 debug    = require('debug')('pagerduty-overrides:tests')
