@@ -13,7 +13,9 @@
 
 - `PAGERDUTY_READ_ONLY_TOKEN` is used for reading schedules and checking the overlaps.
 - `SCHEDULES` array can contain one or more `SCHEDULE` items to check
-- every `SCHEDULE` should have a `PAGERDUTY_TOKEN` to create incident if overlap is found
+- every `SCHEDULE` should have a `NOTIFICATIONS` to create incident or send message if overlap is found
+
+Current are supported only Slack (`SLACK_WEBHOOK_URL`) and PagerDuty (`PAGERDUTY_TOKEN`) notifications. 
 
 ```json
 {
