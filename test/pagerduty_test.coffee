@@ -81,6 +81,7 @@ describe 'Compare schedules', ->
         .get('/schedules/PT57OLG/entries')
         .replyWithFile(200, __dirname + '/fixtures/entries.json')
 
+      nock('https://incomingUrl/').post("/").reply(200, 'ok')
 
       pd.checkSchedulesIds (err, res) ->
         if err then return done err
