@@ -15,7 +15,7 @@
 - `SCHEDULES` array can contain one or more `SCHEDULE` items to check
 - every `SCHEDULE` should have a `NOTIFICATIONS` to create incident or send message if overlap is found
 
-Current are supported only Slack (`SLACK_WEBHOOK_URL`) and PagerDuty (`PAGERDUTY_TOKEN`) notifications.
+Currently, we only support Slack (`SLACK_WEBHOOK_URL`) and PagerDuty (`PAGERDUTY_TOKEN`) notifications.
 
 ```json
 {
@@ -47,6 +47,6 @@ OK
 
 ## Debug problems
 
-For debugging you can use `debug` package included in library.
+For debugging you can use `debug` package included in the library:
 
 `DEBUG=pagerduty-overrides* ./bin/pdoverrides check -c config.json`
