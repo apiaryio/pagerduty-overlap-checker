@@ -1,11 +1,46 @@
 #!/usr/bin/env node
-
+var debug = require('debug');
 var program = require('commander');
+var fs = require('fs');
 var pjson = require('../package.json');
+var config = require('../lib/config');
+var pd = require('../lib/pagerduty');
+var fsAccess = require('fs-access');
 
 program
-  .version(pjson.version)
-  .parse(process.argv);
+  .command('check')
+  .description('Check PagerDuty Overlaps')
+  .action(runCheck);
 
-console.log(program.version());
-console.log(program.argv);
+function runCheck(configFile) {
+  fsAccess(configFile, function (err) {
+    if (err) throw err;
+     config.setupConfig(configFile, function(err, res){
+       if (err) {
+         console.error(err);
+         process.exit(1);
+       }
+       pd.checkSchedulesIds(function(error, res) {
+         if (!res) {
+             console.error("Check failed");
+             process.exit(1);
+         } else {
+           console.log("Config schedule IDs passed.")
+           pd.processSchedulesFromConfig(function(error, msg) {
+             console.log(msg);
+             process.exit(0);
+           });
+         }
+       });
+     });
+   });
+};
+
+program
+    .version(pjson.version)
+    .usage('check --config <path/to/config.json>')
+    .option('-c, --config', 'Path to config.json')
+    .parse(process.argv);
+
+// default help
+if (!program.args.length) program.help();

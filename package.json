@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "PagerDuty Overlap Duties Checker",
   "main": "lib/",
+  "bin": {
+    "pdoverrides": "bin/pdoverrides"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\"",
     "integration": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\" --recursive",
@@ -14,7 +17,9 @@
     "async": "1.5.2",
     "commander": "2.9.0",
     "debug": "2.2.0",
+    "fs-access": "1.0.0",
     "nconf": "0.8.4",
+    "node-slackr": "0.1.2",
     "request": "2.69.0",
     "underscore": "1.8.3"
   },

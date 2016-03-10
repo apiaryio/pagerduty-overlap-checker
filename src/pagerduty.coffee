@@ -3,6 +3,7 @@ request   = require 'request'
 nconf     = require 'nconf'
 _         = require 'underscore'
 debug     = require('debug')('pagerduty-overrides')
+notify    = require './notify'
 
 # Factory for sending request to PD API
 pdGet = (endpointPath, overrideOptions, cb) ->
@@ -25,21 +26,24 @@ pdGet = (endpointPath, overrideOptions, cb) ->
 
 # Get schedule for ID and 2 weeks
 getSchedule = (id, cb) ->
-  week = 7 * 86400 * 1000
-  timeNow = new Date()
-  timeUntil = new Date(timeNow.getTime() + 2 * week)
+  if nconf.get('WEEKS_TO_CHECK') > 0
+    week = 7 * 86400 * 1000
+    timeNow = new Date()
+    timeUntil = new Date(timeNow.getTime() + nconf.get('WEEKS_TO_CHECK') * week)
 
-  scheduleOpts =
-    form:
-      until: timeUntil.toISOString()
-      since: timeNow.toISOString()
+    scheduleOpts =
+      form:
+        until: timeUntil.toISOString()
+        since: timeNow.toISOString()
 
-  pdGet "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
-    if res.statusCode isnt 200 then return cb new Error(
-      "Entries returned status code #{res.statusCode}"
-    )
+    pdGet "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
+      if res.statusCode isnt 200 then return cb new Error(
+        "Entries returned status code #{res.statusCode}"
+      )
 
-    cb err, id: id, entries: body.entries
+      cb err, id: id, entries: body.entries
+  else
+    cb new Error "Missing WEEKS_TO_CHECK settings"
 
 # Get all schedules and returns their ids
 getSchedulesIds = (cb) ->
@@ -55,26 +59,47 @@ getSchedulesIds = (cb) ->
 
 # Check if all schedules defined in config are available in PD
 checkSchedulesIds = (cb) ->
-  configSchedules = _.flatten(nconf.get('SCHEDULES'))
-  debug("Schedules Ids from config: ", configSchedules)
+  configSchedules = nconf.get('SCHEDULES')
+  listIds = []
+  for ids in configSchedules
+    listIds.push ids['SCHEDULE']
+  debug("Schedules Ids from config: ", _.flatten(listIds))
+  configSchedulesIds =  _.flatten(listIds)
   getSchedulesIds (err, schedulesIds) ->
     if err then return cb err
-    debug('intersection: ', _.intersection(configSchedules, schedulesIds).length)
-    debug('config: ', configSchedules.length)
-    if (_.intersection(configSchedules, schedulesIds).length) is configSchedules.length
+    debug('intersection: ', _.intersection(configSchedulesIds, schedulesIds).length)
+    debug('config: ', configSchedulesIds.length)
+    if (_.intersection(configSchedulesIds, schedulesIds).length) is configSchedulesIds.length
       cb null, true
     else
       cb null, false
 
 processSchedulesFromConfig = (cb) ->
   configSchedules = nconf.get('SCHEDULES')
-  debug('configSchedules', configSchedules[0])
-  # here just take first schedules
-  async.map configSchedules[0], (i, next) ->
-    getSchedule i, next
-  , (err, results) ->
-    processSchedules results, (err, message) ->
-      cb null, message
+  debug('configSchedules:', configSchedules.length)
+  processedConfig = null
+  end = configSchedules.length - 1
+  for index in [0..end]
+    processedConfig = configSchedules[index]
+    debug('Process schedule:', )
+    async.mapSeries configSchedules[index]['SCHEDULE'], (i, next) ->
+      getSchedule i, next
+    , (err, results) ->
+      if results
+        processSchedules results, (err, message) ->
+          debug('processSchedules:', processedConfig)
+          if processedConfig['NOTIFICATIONS'] && message isnt "OK"
+            debug('Notification sent.')
+            sendNotification processedConfig['NOTIFICATIONS'], message
+          cb null, message
+      else
+        cb new Error "No schedule to process."
+
+sendNotification = (options, message) ->
+  debug("NOTIFICATIONS:", message)
+  debug("NOTIFICATIONS-OPTIONS:", options)
+  notify.send options, message, (err) ->
+    if err then console.error "Notification failed.", err
 
 processSchedules = (allSchedules, cb) ->
   schedulesMap = {}
@@ -100,11 +125,11 @@ processSchedules = (allSchedules, cb) ->
             message = """Overlapping duty found for user #{myUserName}
               from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
             messages.push message
-  debug(messages)
+  debug(_.uniq(messages))
   if messages.length is 0
     cb null, "OK"
   else
-    cb null, messages
+    cb null, _.uniq(messages)
 
 module.exports = {
   pdGet
@@ -112,4 +137,5 @@ module.exports = {
   checkSchedulesIds
   processSchedules
   processSchedulesFromConfig
+  sendNotification
 }
