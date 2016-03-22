@@ -131,6 +131,46 @@ processSchedules = (allSchedules, cb) ->
   else
     cb null, _.uniq(messages)
 
+getUserId = (email, cb) ->
+
+  userOptions =
+    form:
+      query: email
+
+  pdGet "/users", userOptions, (err, res, body) ->
+    if res.statusCode isnt 200 then return cb new Error(
+      "Entries returned status code #{res.statusCode}"
+    )
+    userId = body.users[0].id
+    cb err, userId
+
+overrideUser = (userId, scheduleId, durationInMinutes = 30, cb) ->
+  if userId and scheduleId
+
+    duration = durationInMinutes * 60 * 1000
+    startDate = new Date()
+    endDate = new Date(startDate.getTime() + duration)
+
+    sharedOptions =
+      uri: nconf.get('PAGERDUTY_API_URL') + "/schedules/#{scheduleId}/overrides"
+      method: 'POST'
+      headers:
+        'Authorization': 'Token token=' + nconf.get('PAGERDUTY_TOKEN')
+      form:
+        override:
+          "user_id": userId
+          "start": startDate.toISOString()
+          "end": endDate.toISOString()
+
+    debug('Calling request with: ', sharedOptions)
+    request sharedOptions, (err, res, body) ->
+      if err then return cb err
+      if res.statusCode isnt 201 then return cb new Error(
+        "Entries returned status code #{res.statusCode}"
+      )
+      reponseObject = JSON.parse(body)
+      cb err, reponseObject.override
+
 module.exports = {
   pdGet
   getSchedulesIds
@@ -138,4 +178,6 @@ module.exports = {
   processSchedules
   processSchedulesFromConfig
   sendNotification
+  getUserId
+  overrideUser
 }

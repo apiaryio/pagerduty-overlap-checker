@@ -98,3 +98,43 @@ describe 'Compare schedules', ->
     for singleMessage in message
       debug(singleMessage)
       assert.include singleMessage, 'Overlapping duty found for user'
+
+
+describe 'Get user id', ->
+
+  expectedId = "PP1565R"
+  actualId = null
+
+  before (done) ->
+    config.setupConfig configPath, (err) ->
+      if err then return done err
+      nock('https://acme.pagerduty.com/api/v1')
+        .get('/users')
+        .replyWithFile(200, __dirname + '/fixtures/users.json')
+
+      pd.getUserId "john@example.com", (err, userId) ->
+        if err then return done err
+        actualId = userId
+        done err
+  it 'Check if userId is right', ->
+    assert.equal expectedId, actualId
+
+describe 'Override user schedule', ->
+  actual = null
+  expected = null
+  userId = "PHLG109"
+  scheduleId = "PIJ90N7"
+
+  before (done) ->
+    config.setupConfig configPath, (err) ->
+      if err then return done err
+      nock('https://acme.pagerduty.com/api/v1')
+        .post("/schedules/#{scheduleId}/overrides")
+        .replyWithFile(201, __dirname + '/fixtures/override.json')
+
+      pd.overrideUser userId, scheduleId, 20, (err, overrideReponse) ->
+        actual = overrideReponse
+        done err
+
+  it 'Check if userId is ok', ->
+    assert.equal actual.user.id, userId
