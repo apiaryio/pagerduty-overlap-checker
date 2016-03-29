@@ -1,6 +1,6 @@
 {
   "name": "pagerduty-overlap-checker",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "PagerDuty Overlap Duties Checker",
   "main": "lib/",
   "bin": {
