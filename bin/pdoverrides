@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-var debug = require('debug');
+
 var program = require('commander');
 var fs = require('fs');
 var pjson = require('../package.json');
 var config = require('../lib/config');
-var pd = require('../lib/pagerduty');
 var fsAccess = require('fs-access');
 
 program
@@ -20,6 +19,7 @@ function runCheck(configFile) {
          console.error(err);
          process.exit(1);
        }
+       var pd = require('../lib/pagerduty');
        pd.checkSchedulesIds(function(error, res) {
          if (!res) {
              console.error("Check failed");

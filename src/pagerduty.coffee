@@ -89,7 +89,7 @@ processSchedulesFromConfig = (cb) ->
         processSchedules results, (err, message) ->
           debug('processSchedules:', processedConfig)
           if processedConfig['NOTIFICATIONS'] && message isnt "OK"
-            debug('Notification sent.')
+            debug('Sending notifications.')
             sendNotification processedConfig['NOTIFICATIONS'], message
           cb null, message
       else

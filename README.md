@@ -51,3 +51,5 @@ OK
 For debugging you can use `debug` package included in the library:
 
 `DEBUG=pagerduty-overrides* ./bin/pdoverrides check -c config.json`
+
+Alternatively, you can include the `DEBUG` variable in the `config.json` file (esp. for debugging on AWS Lambda).
