@@ -14,26 +14,34 @@ program
 function runCheck(configFile) {
   fsAccess(configFile, function (err) {
     if (err) throw err;
-     config.setupConfig(configFile, function(err, res){
-       if (err) {
-         console.error(err);
-         process.exit(1);
-       }
-       var pd = require('../lib/pagerduty');
-       pd.checkSchedulesIds(function(error, res) {
-         if (!res) {
-             console.error("Check failed");
-             process.exit(1);
-         } else {
-           console.log("Config schedule IDs passed.")
-           pd.processSchedulesFromConfig(function(error, msg) {
-             console.log(msg);
-             process.exit(0);
-           });
-         }
-       });
-     });
-   });
+    config.setupConfig(configFile, function(err, res){
+      if (err) {
+        console.error(err);
+        process.exit(1);
+      }
+      var pd = require('../lib/pagerduty');
+      pd.checkSchedulesIds(function(error, res) {
+        if (error) {
+          console.error("Check failed with error:", error)
+          process.exit(1);
+        }
+        if (!res) {
+          console.error("Check failed - empty response");
+          process.exit(1);
+        } else {
+          console.log("Config schedule IDs passed.");
+          pd.processSchedulesFromConfig(function(error, msg) {
+            if (error) {
+              console.error("Error while processing schedules from config", error);
+              process.exit(1)
+            }
+            console.log(msg);
+            process.exit(0);
+          });
+        }
+      });
+    });
+  });
 };
 
 program

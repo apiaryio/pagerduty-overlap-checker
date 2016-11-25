@@ -74,32 +74,34 @@ checkSchedulesIds = (cb) ->
     else
       cb null, false
 
-processSchedulesFromConfig = (cb) ->
+processSchedulesFromConfig = (done) ->
+  messages = []
   configSchedules = nconf.get('SCHEDULES')
   debug('configSchedules:', configSchedules.length)
-  processedConfig = null
-  end = configSchedules.length - 1
-  for index in [0..end]
-    processedConfig = configSchedules[index]
+  async.forEach configSchedules, (processedConfig, cb) ->
     debug('Process schedule:', )
-    async.mapSeries configSchedules[index]['SCHEDULE'], (i, next) ->
+    async.mapSeries processedConfig['SCHEDULE'], (i, next) ->
       getSchedule i, next
     , (err, results) ->
+      if err then cb err
       if results
         processSchedules results, (err, message) ->
+          messages = messages.concat(message)
           debug('processSchedules:', processedConfig)
           if processedConfig['NOTIFICATIONS'] && message isnt "OK"
             debug('Sending notifications.')
-            sendNotification processedConfig['NOTIFICATIONS'], message
-          cb null, message
+            sendNotification processedConfig['NOTIFICATIONS'], message, cb
       else
         cb new Error "No schedule to process."
+  , (err) ->
+    if err then done err
+    done null, messages
 
-sendNotification = (options, message) ->
+sendNotification = (options, message, cb) ->
   debug("NOTIFICATIONS:", message)
   debug("NOTIFICATIONS-OPTIONS:", options)
   notify.send options, message, (err) ->
-    if err then console.error "Notification failed.", err
+    cb err
 
 processSchedules = (allSchedules, cb) ->
   schedulesMap = {}
