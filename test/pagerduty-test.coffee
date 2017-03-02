@@ -9,6 +9,8 @@ pd       = require '../src/pagerduty'
 configPath = __dirname + '/fixtures/config.json'
 configWrongPath = __dirname + '/fixtures/config-wrong.json'
 
+nock.disableNetConnect();
+
 describe 'Get schedules Ids', ->
   schedules = null
 
@@ -80,6 +82,21 @@ describe 'Compare schedules', ->
       nock('https://acme.pagerduty.com/api/v1')
         .get('/schedules/PT57OLG/entries')
         .replyWithFile(200, __dirname + '/fixtures/entries.json')
+
+      expectedBody = {
+          service_key:"111111111111",
+          event_type:"trigger",
+          description:[
+            "Overlapping duty found for user Gregory\nfrom 2012-08-19T00:00:00-04:00 to 2012-08-19T12:00:00-04:00 on schedule ID PWEVPB6!",
+            "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PWEVPB6!",
+            "Overlapping duty found for user Gregory\nfrom 2012-08-19T00:00:00-04:00 to 2012-08-19T12:00:00-04:00 on schedule ID PT57OLG!",
+            "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PT57OLG!"
+          ],
+          details:{subject:"PagerDuty overlap incident"}
+      }
+      nock('https://events.pagerduty.com/generic/2010-04-15/')
+        .post('/create_event.json', expectedBody)
+        .reply(200, 'ok')
 
       nock('https://incomingUrl/').post("/").reply(200, 'ok')
 

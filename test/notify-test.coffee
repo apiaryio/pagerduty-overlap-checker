@@ -8,6 +8,8 @@ notify   = require '../src/notify'
 
 configPath = __dirname + '/fixtures/config.json'
 
+nock.disableNetConnect();
+
 # https://github.com/chenka/node-slackr/blob/master/test/index.coffee
 describe 'Test send message using notify.send for both', ->
 
@@ -17,7 +19,7 @@ describe 'Test send message using notify.send for both', ->
 
     expectBody =
       text:"Message"
-      channel:"#general"
+      channel:"#channel-name"
 
     config.setupConfig configPath, (err) ->
       if err then return done err
