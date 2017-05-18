@@ -30,7 +30,7 @@
   "dependencies": {
     "async": "1.5.2",
     "commander": "2.9.0",
-    "debug": "2.2.0",
+    "debug": "2.6.7",
     "fs-access": "1.0.0",
     "nconf": "0.8.4",
     "node-slackr": "0.1.3",
