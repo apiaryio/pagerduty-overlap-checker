@@ -15,6 +15,7 @@
 - `PAGERDUTY_READ_ONLY_TOKEN` is used for reading schedules and checking the overlaps.
 - `SCHEDULES` array can contain one or more `SCHEDULE` items to check
 - every `SCHEDULE` should have a `NOTIFICATIONS` to create incident or send message if overlap is found
+- `SCHEDULE` can contain a `DAYS` key, which speficies numbers of days in UTC (0 = Sunday) for verification (`[0, 1, 2, 3, 4]` below represents days without weekend)
 
 Currently, we only support Slack (`SLACK` with `SLACK_WEBHOOK_URL` and `CHANNEL`) and PagerDuty (`PAGERDUTY_TOKEN`) notifications.
 
@@ -35,7 +36,8 @@ Currently, we only support Slack (`SLACK` with `SLACK_WEBHOOK_URL` and `CHANNEL`
 		"SCHEDULE": ["PWEVPB6", "PT57OLA"],
 		"NOTIFICATIONS": {
 			"PAGERDUTY_TOKEN": "22222222222222222222"
-		}
+		},
+		"DAYS": [0, 1, 2, 3, 4]
 	}]
 }
 ```

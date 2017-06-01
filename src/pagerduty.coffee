@@ -85,7 +85,7 @@ processSchedulesFromConfig = (done) ->
     , (err, results) ->
       if err then cb err
       if results
-        processSchedules results, (err, message) ->
+        processSchedules results, processedConfig['DAYS'], (err, message) ->
           messages = messages.concat(message)
           debug('processSchedules:', processedConfig)
           if processedConfig['NOTIFICATIONS'] && message isnt "OK"
@@ -94,7 +94,7 @@ processSchedulesFromConfig = (done) ->
       else
         cb new Error "No schedule to process."
   , (err) ->
-    if err then done err
+    if err then return done err
     done null, messages
 
 sendNotification = (options, message, cb) ->
@@ -103,8 +103,9 @@ sendNotification = (options, message, cb) ->
   notify.send options, message, (err) ->
     cb err
 
-processSchedules = (allSchedules, cb) ->
-  schedulesMap = {}
+processSchedules = (allSchedules, days = [], cb) ->
+  if typeof days is 'function'
+    [cb, days] = [days, []]
   messages = []
   debug('allSchedules:', allSchedules)
   for schedule in allSchedules
@@ -122,8 +123,10 @@ processSchedules = (allSchedules, cb) ->
       debug(myUserName)
       for crossSchedule in otherSchedules
         for crossCheckEntry in crossSchedule.entries
+          day = new Date(myStart).getUTCDay()
           if myStart <= crossCheckEntry.start < myEnd and
-              crossCheckEntry.user.id == myUserId
+              crossCheckEntry.user.id == myUserId and
+              (day in days or !days.length)
             message = """Overlapping duty found for user #{myUserName}
               from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
             messages.push message

@@ -7,6 +7,7 @@ config   = require '../src/config'
 pd       = require '../src/pagerduty'
 
 configPath = __dirname + '/fixtures/config.json'
+configWithDaysPath = __dirname + '/fixtures/config-days.json'
 configWrongPath = __dirname + '/fixtures/config-wrong.json'
 
 nock.disableNetConnect();
@@ -112,6 +113,58 @@ describe 'Compare schedules', ->
   it 'Check returned messages if containes "Overlapping duty found for user"', ->
     assert.isArray message
     assert.lengthOf message, 4
+    for singleMessage in message
+      debug(singleMessage)
+      assert.include singleMessage, 'Overlapping duty found for user'
+
+
+describe 'Compare schedules on specific days', ->
+
+  message = null
+
+  before (done) ->
+    config.setupConfig configWithDaysPath, (err) ->
+      if err then return done err
+      nock('https://acme.pagerduty.com/api/v1')
+        .get('/schedules')
+        .replyWithFile(200, __dirname + '/fixtures/schedules.json')
+
+      nock('https://acme.pagerduty.com/api/v1')
+        .get('/schedules/PWEVPB6/entries')
+        .replyWithFile(200, __dirname + '/fixtures/entries-days.json')
+
+      nock('https://acme.pagerduty.com/api/v1')
+        .get('/schedules/PT57OLG/entries')
+        .replyWithFile(200, __dirname + '/fixtures/entries-days.json')
+
+      expectedBody = {
+        service_key:"111111111111",
+        event_type:"trigger",
+        description:[
+          "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PWEVPB6!",
+          "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PT57OLG!",
+        ],
+        details:{subject:"PagerDuty overlap incident"}
+      }
+
+      nock('https://events.pagerduty.com/generic/2010-04-15/')
+        .post('/create_event.json', expectedBody)
+        .reply(200, 'ok')
+
+      nock('https://incomingUrl/').post("/").reply(200, 'ok')
+
+      pd.checkSchedulesIds (err, res) ->
+        if err then return done err
+        unless res
+          return done new Error("Check failed")
+        pd.processSchedulesFromConfig (err, msg) ->
+          if err then return done err
+          message = msg
+          done err
+
+  it 'Check returned messages if containes "Overlapping duty found for user"', ->
+    assert.isArray message
+    assert.lengthOf message, 2
     for singleMessage in message
       debug(singleMessage)
       assert.include singleMessage, 'Overlapping duty found for user'
