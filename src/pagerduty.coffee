@@ -85,7 +85,7 @@ processSchedulesFromConfig = (done) ->
     , (err, results) ->
       if err then cb err
       if results
-        processSchedules results, processedConfig['DAYS'], (err, message) ->
+        processSchedules results, processedConfig['EXCLUSION_DAYS'], (err, message) ->
           messages = messages.concat(message)
           debug('processSchedules:', processedConfig)
           if processedConfig['NOTIFICATIONS'] && message isnt "OK"
@@ -126,7 +126,7 @@ processSchedules = (allSchedules, days = [], cb) ->
           day = new Date(myStart).getUTCDay()
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId and
-              (day in days or !days.length)
+              (day not in days or !days.length)
             message = """Overlapping duty found for user #{myUserName}
               from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
             messages.push message

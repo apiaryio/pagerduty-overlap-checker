@@ -11,6 +11,6 @@
       },
       "PAGERDUTY_TOKEN" : "111111111111"
     },
-    "DAYS": [0, 1, 2, 3, 4]
+    "EXCLUSION_DAYS": [5, 6]
   }]
 }
