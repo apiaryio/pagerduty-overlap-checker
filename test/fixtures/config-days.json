@@ -1,0 +1,16 @@
+{
+  "PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
+  "PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
+  "WEEKS_TO_CHECK": 2,
+  "SCHEDULES": [{
+    "SCHEDULE": ["PWEVPB6", "PT57OLG"],
+    "NOTIFICATIONS": {
+      "SLACK": {
+        "SLACK_WEBHOOK_URL": "https://incomingUrl/",
+        "CHANNEL": "#channel-name"
+      },
+      "PAGERDUTY_TOKEN" : "111111111111"
+    },
+    "DAYS": [0, 1, 2, 3, 4]
+  }]
+}
