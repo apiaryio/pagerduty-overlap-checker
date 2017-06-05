@@ -123,7 +123,7 @@ processSchedules = (allSchedules, days = [], cb) ->
       debug(myUserName)
       for crossSchedule in otherSchedules
         for crossCheckEntry in crossSchedule.entries
-          day = new Date(myStart).getUTCDay()
+          day = getDayAbbrev(new Date(myStart).getUTCDay())
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId and
               (day not in days or !days.length)
@@ -175,6 +175,11 @@ overrideUser = (userId, scheduleId, durationInMinutes = 30, cb) ->
       )
       reponseObject = JSON.parse(body)
       cb err, reponseObject.override
+
+getDayAbbrev = (utcDay) ->
+  days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+  return days[utcDay]
 
 module.exports = {
   pdGet

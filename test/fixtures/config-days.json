@@ -11,6 +11,6 @@
       },
       "PAGERDUTY_TOKEN" : "111111111111"
     },
-    "EXCLUSION_DAYS": [5, 6]
+    "EXCLUSION_DAYS": ["Fri", "Sat"]
   }]
 }
