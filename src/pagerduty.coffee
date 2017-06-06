@@ -123,10 +123,32 @@ processSchedules = (allSchedules, days = [], cb) ->
       debug(myUserName)
       for crossSchedule in otherSchedules
         for crossCheckEntry in crossSchedule.entries
-          day = getDayAbbrev(new Date(myStart).getUTCDay())
+          overlap = false
+          startDate = new Date(myStart)
+          day = getDayAbbrev(startDate.getUTCDay())
           if myStart <= crossCheckEntry.start < myEnd and
-              crossCheckEntry.user.id == myUserId and
-              (day not in days or !days.length)
+              crossCheckEntry.user.id == myUserId
+            overlap = true
+
+            if day in Object.keys(days)
+
+              if days[day]?.start? and days[day]?.end?
+                exclusionStartTime = days[day].start.split(':')
+                exclusionEndTime = days[day].end.split(':')
+                exclusionStartDate = new Date(myStart)
+                exclusionStartDate.setHours(exclusionStartTime[0])
+                exclusionStartDate.setMinutes(exclusionStartTime[1])
+                exclusionEndDate = new Date(myStart)
+                exclusionEndDate.setHours(exclusionEndTime[0])
+                exclusionEndDate.setMinutes(exclusionEndTime[1])
+
+
+                if exclusionStartDate <= startDate < exclusionEndDate
+                  overlap = false
+              else
+                overlap = false
+
+          if overlap
             message = """Overlapping duty found for user #{myUserName}
               from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
             messages.push message
