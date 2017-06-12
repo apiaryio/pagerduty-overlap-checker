@@ -11,6 +11,6 @@
       },
       "PAGERDUTY_TOKEN" : "111111111111"
     },
-    "DAYS": [0, 1, 2, 3, 4]
+    "EXCLUSION_DAYS": {"Fri": {"start": "16:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "16:00"}}
   }]
 }
