@@ -92,7 +92,7 @@ describe 'Compare schedules', ->
             "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PWEVPB6!",
             "Overlapping duty found for user Gregory\nfrom 2012-08-19T00:00:00-04:00 to 2012-08-19T12:00:00-04:00 on schedule ID PT57OLG!",
             "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PT57OLG!"
-          ],
+          ].join('\n'),
           details:{subject:"PagerDuty overlap incident"}
       }
       nock('https://events.pagerduty.com/generic/2010-04-15/')
@@ -143,7 +143,7 @@ describe 'Compare schedules on specific days', ->
         description:[
           "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PWEVPB6!",
           "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PT57OLG!",
-        ],
+        ].join('\n'),
         details:{subject:"PagerDuty overlap incident"}
       }
 

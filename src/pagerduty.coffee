@@ -64,7 +64,7 @@ checkSchedulesIds = (cb) ->
   for ids in configSchedules
     listIds.push ids['SCHEDULE']
   debug("Schedules Ids from config: ", _.flatten(listIds))
-  configSchedulesIds =  _.flatten(listIds)
+  configSchedulesIds =  _.uniq(_.flatten(listIds))
   getSchedulesIds (err, schedulesIds) ->
     if err then return cb err
     debug('intersection: ', _.intersection(configSchedulesIds, schedulesIds).length)
@@ -126,6 +126,10 @@ processSchedules = (allSchedules, days = [], cb) ->
           overlap = false
           startDate = new Date(myStart)
           day = getDayAbbrev(startDate.getUTCDay())
+
+          message = """Overlapping duty found for user #{myUserName}
+              from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
+
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId
             overlap = true
@@ -144,13 +148,12 @@ processSchedules = (allSchedules, days = [], cb) ->
 
 
                 if exclusionStartDate <= startDate < exclusionEndDate
+                  debug('excluded:', message)
                   overlap = false
               else
                 overlap = false
 
           if overlap
-            message = """Overlapping duty found for user #{myUserName}
-              from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
             messages.push message
   debug(_.uniq(messages))
   if messages.length is 0

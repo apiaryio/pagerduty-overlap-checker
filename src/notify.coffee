@@ -16,7 +16,7 @@ createPagerDutyIncident = (options, message, cb) ->
       json:
         service_key: options.serviceKey
         event_type: "trigger",
-        description: options.description or message
+        description: message or options.description[0] # description is an array - https://github.com/apiaryio/pagerduty-overlap-checker/blob/master/src/pagerduty.coffee#L154
         details:
           options.details
 
@@ -55,13 +55,13 @@ send = (options, message, cb) ->
 
   async.parallel [
     (next) ->
-        if options['SLACK']?
+        if options['SLACK'] or options['SLACK_WEBHOOK_URL']?
           debug('Found Slack webhook, sending a notification')
           slackMessage = {}
           slackMessage.text = formatMessage(message)
-          slackMessage.channel = options['SLACK']['CHANNEL']
+          slackMessage.channel = options['SLACK']?['CHANNEL']
           slackOptions = {}
-          slackOptions.webhookUrl = options['SLACK']['SLACK_WEBHOOK_URL']
+          slackOptions.webhookUrl = options['SLACK']?['SLACK_WEBHOOK_URL'] or options['SLACK_WEBHOOK_URL']
           createSlackMessage slackOptions, slackMessage, next
         else
           debug('No Slack webhook defined')
