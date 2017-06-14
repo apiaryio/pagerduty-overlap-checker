@@ -10,16 +10,15 @@ createPagerDutyIncident = (options, message, cb) ->
   unless options.serviceKey
     cb new Error "Missing PD service key"
   else
+
     request
       uri:  'https://events.pagerduty.com/generic/2010-04-15/create_event.json'
       method: "POST"
       json:
         service_key: options.serviceKey
         event_type: "trigger",
-        description: options.description or message
-        details:
-          options.details
-
+        description: "On-call overlap found!"
+        details: message
     , (err, res, body) ->
       if body?.errors?.length > 0
         err ?= new Error "INCIDENT_CREATION_FAILED Cannot create event: #{JSON.stringify body.errors}"
@@ -46,22 +45,38 @@ formatMessage = (messages, option = 'plain') ->
   if typeof messages is 'string'
     return messages
   else
-    outputMessage = messages.join('\n')
-    debug('Notification - formatMessage: ', outputMessage)
-    return outputMessage
+    switch option
+      when 'plain'
+        outputMessage = "_Following overlaps found:_\n"
+        for message in messages
+          outputMessage += """#{message.user}: #{message.schedules[0]} and #{message.schedules[1]} on #{message.date.toLocaleString()}\n"""
+      when 'markdown'
+        outputMessage = "Following overlaps found:\n"
+        for message in messages
+          outputMessage += """*#{message.user}:* `#{message.schedules[0]}` and `#{message.schedules[1]}` on #{message.date.toLocaleString()}\n"""
+      when 'json'
+        outputMessage = messages.reduce((acc, curr)->
+          acc[curr.user] ?= []
+          acc[curr.user].push("#{curr.schedules[0]} and #{curr.schedules[1]} on #{curr.date.toLocaleString()}")
+          return acc
+        , {})
+
+  debug('Notification - formatMessage option: ', option)
+  debug('Notification - formatMessage: ', outputMessage)
+  return outputMessage
 
 send = (options, message, cb) ->
   debug('send:', options, message)
 
   async.parallel [
     (next) ->
-        if options['SLACK']?
+        if options['SLACK'] or options['SLACK_WEBHOOK_URL']?
           debug('Found Slack webhook, sending a notification')
           slackMessage = {}
-          slackMessage.text = formatMessage(message)
-          slackMessage.channel = options['SLACK']['CHANNEL']
+          slackMessage.text = formatMessage(message, 'markdown')
+          slackMessage.channel = options['SLACK']?['CHANNEL']
           slackOptions = {}
-          slackOptions.webhookUrl = options['SLACK']['SLACK_WEBHOOK_URL']
+          slackOptions.webhookUrl = options['SLACK']?['SLACK_WEBHOOK_URL'] or options['SLACK_WEBHOOK_URL']
           createSlackMessage slackOptions, slackMessage, next
         else
           debug('No Slack webhook defined')
@@ -72,9 +87,7 @@ send = (options, message, cb) ->
           pdOptions = {}
           pdOptions.serviceKey = options['PAGERDUTY_TOKEN']
           pdOptions.description = message
-          pdOptions.details =
-            subject: "PagerDuty overlap incident"
-          createPagerDutyIncident pdOptions, formatMessage(message), next
+          createPagerDutyIncident pdOptions, formatMessage(message, 'json'), next
         else
           debug('No PD token defined')
           next()

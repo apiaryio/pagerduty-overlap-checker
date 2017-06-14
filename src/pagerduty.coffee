@@ -53,8 +53,17 @@ getSchedulesIds = (cb) ->
     if err
       console.log "Cannot get request:", err
       return cb err
-    schedulesIds = _.pluck(body.schedules, "id")
+
+    schedulesIds = []
+
+    for schedule in body.schedules
+      schedulesIds.push(schedule.id)
+      # UWAGA UWAGA - side effect follows!
+      # it's easier, cheaper and more comprehensive to load schedule names here and temporarily store them using nconf
+      nconf.set("schedulesNames:#{schedule.id}", schedule.name)
+
     debug("Schedules Ids from PD: ", schedulesIds)
+    debug("Schedules Names from PD: ", debug(nconf.get("schedulesNames")))
     cb null, schedulesIds
 
 # Check if all schedules defined in config are available in PD
@@ -64,7 +73,7 @@ checkSchedulesIds = (cb) ->
   for ids in configSchedules
     listIds.push ids['SCHEDULE']
   debug("Schedules Ids from config: ", _.flatten(listIds))
-  configSchedulesIds =  _.flatten(listIds)
+  configSchedulesIds =  _.uniq(_.flatten(listIds))
   getSchedulesIds (err, schedulesIds) ->
     if err then return cb err
     debug('intersection: ', _.intersection(configSchedulesIds, schedulesIds).length)
@@ -107,6 +116,7 @@ processSchedules = (allSchedules, days = [], cb) ->
   if typeof days is 'function'
     [cb, days] = [days, []]
   messages = []
+  duplicities = {}
   debug('allSchedules:', allSchedules)
   for schedule in allSchedules
     debug('schedule:', schedule)
@@ -121,11 +131,18 @@ processSchedules = (allSchedules, days = [], cb) ->
       debug(myUserId)
       myUserName = entry.user.name
       debug(myUserName)
+      duplicities.myUserName ?= []
       for crossSchedule in otherSchedules
         for crossCheckEntry in crossSchedule.entries
           overlap = false
           startDate = new Date(myStart)
           day = getDayAbbrev(startDate.getUTCDay())
+
+          scheduleId = nconf.get("schedulesNames:#{schedule.id}")
+          crossScheduleId = nconf.get("schedulesNames:#{crossSchedule.id}")
+
+          message = {user: myUserName, schedules: [scheduleId, crossScheduleId], date: startDate}
+
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId
             overlap = true
@@ -144,13 +161,13 @@ processSchedules = (allSchedules, days = [], cb) ->
 
 
                 if exclusionStartDate <= startDate < exclusionEndDate
+                  debug('excluded:', message)
                   overlap = false
               else
                 overlap = false
 
-          if overlap
-            message = """Overlapping duty found for user #{myUserName}
-              from #{myStart} to #{myEnd} on schedule ID #{schedule.id}!"""
+          if overlap and crossCheckEntry.start not in duplicities.myUserName
+            duplicities.myUserName.push(crossCheckEntry.start)
             messages.push message
   debug(_.uniq(messages))
   if messages.length is 0

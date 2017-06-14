@@ -87,13 +87,8 @@ describe 'Compare schedules', ->
       expectedBody = {
           service_key:"111111111111",
           event_type:"trigger",
-          description:[
-            "Overlapping duty found for user Gregory\nfrom 2012-08-19T00:00:00-04:00 to 2012-08-19T12:00:00-04:00 on schedule ID PWEVPB6!",
-            "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PWEVPB6!",
-            "Overlapping duty found for user Gregory\nfrom 2012-08-19T00:00:00-04:00 to 2012-08-19T12:00:00-04:00 on schedule ID PT57OLG!",
-            "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PT57OLG!"
-          ],
-          details:{subject:"PagerDuty overlap incident"}
+          description:"On-call overlap found!"
+          details:{"Gregory":["""Primary and Secondary on #{new Date("2012-08-19T00:00:00-04:00").toLocaleString()}"""],"Halie":["Primary and Secondary on #{new Date("2012-08-19T12:00:00-04:00").toLocaleString()}"]}
       }
       nock('https://events.pagerduty.com/generic/2010-04-15/')
         .post('/create_event.json', expectedBody)
@@ -110,12 +105,14 @@ describe 'Compare schedules', ->
           message = msg
           done err
 
-  it 'Check returned messages if containes "Overlapping duty found for user"', ->
+  it 'Check returned messages if containes "Primary and Secondary"', ->
     assert.isArray message
-    assert.lengthOf message, 4
+    assert.lengthOf message, 2
     for singleMessage in message
       debug(singleMessage)
-      assert.include singleMessage, 'Overlapping duty found for user'
+      assert.isObject singleMessage
+      assert.include singleMessage.schedules, "Primary"
+      assert.include singleMessage.schedules, "Secondary"
 
 
 describe 'Compare schedules on specific days', ->
@@ -140,11 +137,8 @@ describe 'Compare schedules on specific days', ->
       expectedBody = {
         service_key:"111111111111",
         event_type:"trigger",
-        description:[
-          "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PWEVPB6!",
-          "Overlapping duty found for user Halie\nfrom 2012-08-19T12:00:00-04:00 to 2012-08-20T00:00:00-04:00 on schedule ID PT57OLG!",
-        ],
-        details:{subject:"PagerDuty overlap incident"}
+        description: "On-call overlap found!"
+        details:{"Halie":["Primary and Secondary on #{new Date("2012-08-19T12:00:00-04:00").toLocaleString()}"]}
       }
 
       nock('https://events.pagerduty.com/generic/2010-04-15/')
@@ -162,12 +156,14 @@ describe 'Compare schedules on specific days', ->
           message = msg
           done err
 
-  it 'Check returned messages if containes "Overlapping duty found for user"', ->
+  it 'Check returned messages if containes "Primary and Secondary"', ->
     assert.isArray message
-    assert.lengthOf message, 2
+    assert.lengthOf message, 1
     for singleMessage in message
       debug(singleMessage)
-      assert.include singleMessage, 'Overlapping duty found for user'
+      assert.isObject singleMessage
+      assert.include singleMessage.schedules, "Primary"
+      assert.include singleMessage.schedules, "Secondary"
 
 
 describe 'Get user id', ->
