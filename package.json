@@ -1,6 +1,6 @@
 {
   "name": "pagerduty-overlap-checker",
-  "version": "1.1.0",
+  "version": "0.0.0-semantically-released",
   "description": "PagerDuty Overlap Duties Checker",
   "main": "lib/",
   "bin": {
@@ -9,12 +9,13 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\"",
     "integration": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\" --recursive",
-    "lint": "coffeelint ./src",
+    "lint": "conventional-changelog-lint --from=master && coffeelint ./src",
     "compile": "coffee -b -c -o lib/ src/",
     "pretest": "npm run compile",
     "prepublish": "npm run compile",
     "coverage": "./scripts/cov",
-    "coveralls": "npm run coverage && cat ./cov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "npm run coverage && cat ./cov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "author": "Apiary Inc <support@apiary.io>",
   "license": "MIT",
@@ -38,13 +39,15 @@
     "underscore": "1.8.3"
   },
   "devDependencies": {
-    "coffee-script": "1.10.0",
+    "chai": "",
     "coffee-coverage": "^0.7.0",
+    "coffee-script": "1.10.0",
     "coffeelint": "^1.9.2",
+    "conventional-changelog-lint": "^1.1.9",
     "coveralls": "~2.11.2",
     "mocha": "",
     "mocha-lcov-reporter": "1.0.0",
-    "chai": "",
-    "nock": "7.2.2"
+    "nock": "7.2.2",
+    "semantic-release": "^6.3.6"
   }
 }
