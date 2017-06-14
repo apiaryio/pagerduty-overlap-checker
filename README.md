@@ -16,8 +16,8 @@
 - `PAGERDUTY_READ_ONLY_TOKEN` is used for reading schedules and checking the overlaps.
 - `SCHEDULES` array can contain one or more `SCHEDULE` items to check
 - every `SCHEDULE` should have a `NOTIFICATIONS` to create incident or send message if overlap is found
-- `SCHEDULE` can contain a `EXCLUSION_DAYS` key, which specifies days (3 letter abb.) in form of object with optional `start` and `end` time (`hh:mm` format). If `start` or `end` is omitted, whole day is considered excluded. 
-Example below represents current weekend on-call setup. All datetimes are translated to UTC, so feel free to use a local time.
+- `SCHEDULE` can contain a `EXCLUSION_DAYS` key, which specifies days (3 letter abb.) in form of object with optional `start` and `end` time (`hh:mm` format **UTC TIMEZONE**).If `start` or `end` is omitted, whole day is considered excluded. 
+Example below represents current weekend on-call setup.
 
 Currently, we only support Slack (`SLACK` with `SLACK_WEBHOOK_URL` and `CHANNEL`) or shorthanded `SLACK_WEBHOOK_URL` and PagerDuty (`PAGERDUTY_TOKEN`) notifications.
 
@@ -40,7 +40,7 @@ Currently, we only support Slack (`SLACK` with `SLACK_WEBHOOK_URL` and `CHANNEL`
 			"PAGERDUTY_TOKEN": "22222222222222222222",
 			"SLACK_WEBHOOK_URL": "http://acme.slack.com/11111",
 		},
-		"EXCLUSION_DAYS": {"Fri": {"start": "16:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "16:00"}}
+		"EXCLUSION_DAYS": {"Fri": {"start": "14:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "14:00"}}
 	}]
 }
 ```
