@@ -4,8 +4,8 @@
 
 # NodeJS supported versions
 
-- 4.3 (LTS)
-- 5.x latest
+- 5.x
+- 6.x (LTS)
 
 # Pager Duty Overrides Checker
 
