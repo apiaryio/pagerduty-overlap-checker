@@ -153,11 +153,11 @@ processSchedules = (allSchedules, days = [], cb) ->
                 exclusionStartTime = days[day].start.split(':')
                 exclusionEndTime = days[day].end.split(':')
                 exclusionStartDate = new Date(myStart)
-                exclusionStartDate.setHours(exclusionStartTime[0])
-                exclusionStartDate.setMinutes(exclusionStartTime[1])
+                exclusionStartDate.setUTCHours(exclusionStartTime[0])
+                exclusionStartDate.setUTCMinutes(exclusionStartTime[1])
                 exclusionEndDate = new Date(myStart)
-                exclusionEndDate.setHours(exclusionEndTime[0])
-                exclusionEndDate.setMinutes(exclusionEndTime[1])
+                exclusionEndDate.setUTCHours(exclusionEndTime[0])
+                exclusionEndDate.setUTCMinutes(exclusionEndTime[1])
 
 
                 if exclusionStartDate <= startDate < exclusionEndDate
