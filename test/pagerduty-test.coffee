@@ -5,6 +5,7 @@ debug    = require('debug')('pagerduty-overrides:tests')
 
 config   = require '../src/config'
 pd       = require '../src/pagerduty'
+pd_api   = require '../src/pagerduty-api'
 
 configPath = __dirname + '/fixtures/config.json'
 configWithDaysPath = __dirname + '/fixtures/config-days.json'
@@ -18,8 +19,9 @@ describe 'Get schedules Ids', ->
   before (done) ->
     config.setupConfig configPath, (err) ->
       if err then return done err
-      nock('https://acme.pagerduty.com/api/v1')
+      nock('https://api.pagerduty.com/')
         .get('/schedules')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/schedules.json')
 
       pd.getSchedulesIds (err, schedulesIds) ->
@@ -36,8 +38,9 @@ describe 'Check schedules', ->
     config.setupConfig configPath, (err) ->
       if err then return done err
 
-      nock('https://acme.pagerduty.com/api/v1')
+      nock('https://api.pagerduty.com/')
         .get('/schedules')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/schedules.json')
 
       pd.checkSchedulesIds (err, res) ->
@@ -54,8 +57,9 @@ describe 'Check schedules with wrong config', ->
     config.setupConfig configWrongPath, (err) ->
       if err then return done err
 
-      nock('https://acme.pagerduty.com/api/v1')
+      nock('https://api.pagerduty.com/')
         .get('/schedules')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/schedules.json')
 
       pd.checkSchedulesIds (err, res) ->
@@ -72,26 +76,29 @@ describe 'Compare schedules', ->
   before (done) ->
     config.setupConfig configPath, (err) ->
       if err then return done err
-      nock('https://acme.pagerduty.com/api/v1')
+      nock('https://api.pagerduty.com/')
         .get('/schedules')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/schedules.json')
 
-      nock('https://acme.pagerduty.com/api/v1')
-        .get('/schedules/PWEVPB6/entries')
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/entries.json')
 
-      nock('https://acme.pagerduty.com/api/v1')
-        .get('/schedules/PT57OLG/entries')
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/entries.json')
 
-      expectedBody = {
-          service_key:"111111111111",
-          event_type:"trigger",
-          description:"On-call overlap found!"
-          details:{"Gregory":["""Primary and Secondary on #{new Date("2012-08-19T00:00:00-04:00").toLocaleString()}"""],"Halie":["Primary and Secondary on #{new Date("2012-08-19T12:00:00-04:00").toLocaleString()}"]}
-      }
-      nock('https://events.pagerduty.com/generic/2010-04-15/')
-        .post('/create_event.json', expectedBody)
+      nock('https://api.pagerduty.com/')
+        .post('/incidents', require('./fixtures/incident.json'))
+        .query(true)
+        .reply(200, 'ok')
+
+      nock('https://api.pagerduty.com/')
+        .post('/incidents', require('./fixtures/incident2.json'))
+        .query(true)
         .reply(200, 'ok')
 
       nock('https://incomingUrl/').post("/").reply(200, 'ok')
@@ -122,27 +129,24 @@ describe 'Compare schedules on specific days', ->
   before (done) ->
     config.setupConfig configWithDaysPath, (err) ->
       if err then return done err
-      nock('https://acme.pagerduty.com/api/v1')
+      nock('https://api.pagerduty.com/')
         .get('/schedules')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/schedules.json')
 
-      nock('https://acme.pagerduty.com/api/v1')
-        .get('/schedules/PWEVPB6/entries')
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/entries-days.json')
 
-      nock('https://acme.pagerduty.com/api/v1')
-        .get('/schedules/PT57OLG/entries')
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/entries-days.json')
 
-      expectedBody = {
-        service_key:"111111111111",
-        event_type:"trigger",
-        description: "On-call overlap found!"
-        details:{"Halie":["Primary and Secondary on #{new Date("2012-08-19T12:00:00-04:00").toLocaleString()}"]}
-      }
-
-      nock('https://events.pagerduty.com/generic/2010-04-15/')
-        .post('/create_event.json', expectedBody)
+      nock('https://api.pagerduty.com/')
+        .post('/incidents', require('./fixtures/incident.json'))
+        .query(true)
         .reply(200, 'ok')
 
       nock('https://incomingUrl/').post("/").reply(200, 'ok')
@@ -174,33 +178,15 @@ describe 'Get user id', ->
   before (done) ->
     config.setupConfig configPath, (err) ->
       if err then return done err
-      nock('https://acme.pagerduty.com/api/v1')
+      nock('https://api.pagerduty.com/')
         .get('/users')
+        .query(true)
         .replyWithFile(200, __dirname + '/fixtures/users.json')
 
-      pd.getUserId "john@example.com", (err, userId) ->
+      pd_api.getUserId "john@example.com", (err, userId) ->
         if err then return done err
         actualId = userId
         done err
   it 'Check if userId is right', ->
     assert.equal expectedId, actualId
 
-describe 'Override user schedule', ->
-  actual = null
-  expected = null
-  userId = "PHLG109"
-  scheduleId = "PIJ90N7"
-
-  before (done) ->
-    config.setupConfig configPath, (err) ->
-      if err then return done err
-      nock('https://acme.pagerduty.com/api/v1')
-        .post("/schedules/#{scheduleId}/overrides")
-        .replyWithFile(201, __dirname + '/fixtures/override.json')
-
-      pd.overrideUser userId, scheduleId, 20, (err, overrideReponse) ->
-        actual = overrideReponse
-        done err
-
-  it 'Check if userId is ok', ->
-    assert.equal actual.user.id, userId
