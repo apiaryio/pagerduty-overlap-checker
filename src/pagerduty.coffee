@@ -1,28 +1,9 @@
 async     = require 'async'
-request   = require 'request'
 nconf     = require 'nconf'
 _         = require 'underscore'
 debug     = require('debug')('pagerduty-overrides')
 notify    = require './notify'
-
-# Factory for sending request to PD API
-pdGet = (endpointPath, overrideOptions, cb) ->
-  debug("Calling #{endpointPath} with options:", overrideOptions)
-  sharedOptions =
-    uri: nconf.get('PAGERDUTY_API_URL') + endpointPath
-    method: 'GET'
-    json: true
-    headers:
-      'Authorization': 'Token token=' + nconf.get('PAGERDUTY_READ_ONLY_TOKEN')
-
-  if typeof overrideOptions is 'function'
-    cb = overrideOptions
-    overrideOptions = {}
-
-  _.extend sharedOptions, overrideOptions
-
-  debug('Calling request with: ', sharedOptions)
-  request sharedOptions, cb
+pd_api    = require './pagerduty-api'
 
 # Get schedule for ID and 2 weeks
 getSchedule = (id, cb) ->
@@ -36,7 +17,7 @@ getSchedule = (id, cb) ->
         until: timeUntil.toISOString()
         since: timeNow.toISOString()
 
-    pdGet "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
+    pd_api.send "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
       if res.statusCode isnt 200 then return cb new Error(
         "Entries returned status code #{res.statusCode}"
       )
@@ -48,7 +29,7 @@ getSchedule = (id, cb) ->
 # Get all schedules and returns their ids
 getSchedulesIds = (cb) ->
   debug("Getting schedules from PD")
-  pdGet "/schedules", {}, (err, res, body) ->
+  pd_api.send "/schedules", {}, (err, res, body) ->
     debug('Returned status code:', res.statusCode)
     if err
       console.log "Cannot get request:", err
@@ -181,7 +162,7 @@ getUserId = (email, cb) ->
     form:
       query: email
 
-  pdGet "/users", userOptions, (err, res, body) ->
+  pd_api.send "/users", userOptions, (err, res, body) ->
     if res.statusCode isnt 200 then return cb new Error(
       "Entries returned status code #{res.statusCode}"
     )
@@ -196,18 +177,15 @@ overrideUser = (userId, scheduleId, durationInMinutes = 30, cb) ->
     endDate = new Date(startDate.getTime() + duration)
 
     sharedOptions =
-      uri: nconf.get('PAGERDUTY_API_URL') + "/schedules/#{scheduleId}/overrides"
       method: 'POST'
-      headers:
-        'Authorization': 'Token token=' + nconf.get('PAGERDUTY_TOKEN')
+      json: false
       form:
         override:
           "user_id": userId
           "start": startDate.toISOString()
           "end": endDate.toISOString()
 
-    debug('Calling request with: ', sharedOptions)
-    request sharedOptions, (err, res, body) ->
+    pd_api.send "/schedules/#{scheduleId}/overrides", sharedOptions, (err, res, body) ->
       if err then return cb err
       if res.statusCode isnt 201 then return cb new Error(
         "Entries returned status code #{res.statusCode}"
@@ -221,7 +199,6 @@ getDayAbbrev = (utcDay) ->
   return days[utcDay]
 
 module.exports = {
-  pdGet
   getSchedulesIds
   checkSchedulesIds
   processSchedules
