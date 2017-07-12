@@ -168,25 +168,3 @@ describe 'Compare schedules on specific days', ->
       assert.isObject singleMessage
       assert.include singleMessage.schedules, "Primary"
       assert.include singleMessage.schedules, "Secondary"
-
-
-describe 'Get user id', ->
-
-  expectedId = "PP1565R"
-  actualId = null
-
-  before (done) ->
-    config.setupConfig configPath, (err) ->
-      if err then return done err
-      nock('https://api.pagerduty.com/')
-        .get('/users')
-        .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/users.json')
-
-      pd_api.getUserId "john@example.com", (err, userId) ->
-        if err then return done err
-        actualId = userId
-        done err
-  it 'Check if userId is right', ->
-    assert.equal expectedId, actualId
-

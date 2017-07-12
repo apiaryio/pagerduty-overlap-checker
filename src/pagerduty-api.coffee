@@ -30,17 +30,6 @@ send = (endpointPath, overrideOptions, cb) ->
   debug('Calling request with: ', sharedOptions)
   request sharedOptions, cb
 
-getUserId = (email, cb) ->
-
-  userOptions =
-    form:
-      query: email
-
-  send "/users", userOptions, (err, res, body) ->
-    if res.statusCode isnt 200 then return cb new Error "Returned status code #{res.statusCode}"
-    cb err, body.users[0].id
-
 module.exports = {
-  send,
-  getUserId
+  send
 }
