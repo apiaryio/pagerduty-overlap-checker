@@ -23,7 +23,7 @@ describe 'Test send message using notify.send for both', ->
       date: new Date()
 
     expectBody =
-      text:"Following overlaps found:\n*Test user:* `TEST1` and `TEST2` on #{message.date.toLocaleString()}\n"
+      text:"Following overlaps found:\n*Test user:* `TEST1` and `TEST2` on #{message.date.toUTCString()}\n"
       channel:"#channel-name"
 
     config.setupConfig configPath, (err) ->
