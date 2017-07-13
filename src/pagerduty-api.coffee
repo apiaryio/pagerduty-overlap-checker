@@ -7,7 +7,7 @@ url      = require 'url'
 # Factory for sending request to PD API
 send = (endpointPath, overrideOptions, cb) ->
   debug("Calling #{endpointPath} with options:", overrideOptions)
-  sharedOptions =
+  defaultOptions =
     uri: url.resolve 'https://api.pagerduty.com', endpointPath
     method: 'GET'
     json: true
@@ -16,19 +16,19 @@ send = (endpointPath, overrideOptions, cb) ->
     cb = overrideOptions
     overrideOptions = {}
 
-  _.extend sharedOptions, overrideOptions
+  _.extend defaultOptions, overrideOptions
 
-  sharedOptions.headers ?= []
-  sharedOptions.headers.Authorization ?= 'Token token=' + nconf.get('PAGERDUTY_READ_ONLY_TOKEN')
-  sharedOptions.headers.Accept =  'application/vnd.pagerduty+json;version=2'
-  sharedOptions.headers['Content-Type'] = 'application/json'
+  defaultOptions.headers ?= []
+  defaultOptions.headers.Authorization ?= 'Token token=' + nconf.get('PAGERDUTY_READ_ONLY_TOKEN')
+  defaultOptions.headers.Accept =  'application/vnd.pagerduty+json;version=2'
+  defaultOptions.headers['Content-Type'] = 'application/json'
 
-  sharedOptions.qs ?= []
-  sharedOptions.qs.limit = 100
-  sharedOptions.qs.timezone = 'UTC'
+  defaultOptions.qs ?= []
+  defaultOptions.qs.limit = 100
+  defaultOptions.qs.timezone = 'UTC'
 
-  debug('Calling request with: ', sharedOptions)
-  request sharedOptions, cb
+  debug('Calling request with: ', defaultOptions)
+  request defaultOptions, cb
 
 module.exports = {
   send

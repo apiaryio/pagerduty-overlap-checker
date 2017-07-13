@@ -3,7 +3,7 @@ nconf     = require 'nconf'
 _         = require 'underscore'
 debug     = require('debug')('pagerduty-overrides')
 notify    = require './notify'
-pd_api    = require './pagerduty-api'
+pdApi    = require './pagerduty-api'
 
 # Get schedule for ID and 2 weeks
 getSchedule = (id, cb) ->
@@ -19,7 +19,7 @@ getSchedule = (id, cb) ->
         since: timeNow.toISOString()
 
 
-    pd_api.send "/oncalls", scheduleOpts, (err, res, body) ->
+    pdApi.send "/oncalls", scheduleOpts, (err, res, body) ->
       if err
         console.log "Request send error:", err
         return cb err
@@ -32,7 +32,7 @@ getSchedule = (id, cb) ->
 # Get all schedules and returns their ids
 getSchedulesIds = (cb) ->
   debug("Getting schedules from PD")
-  pd_api.send "/schedules", {}, (err, res, body) ->
+  pdApi.send "/schedules", {}, (err, res, body) ->
     if err
       console.log "Request send error:", err
       return cb err
@@ -115,8 +115,6 @@ processSchedules = (allSchedules, days = [], cb) ->
       duplicities.myUserName ?= []
       for crossSchedule in otherSchedules
         for crossCheckEntry in crossSchedule.entries
-#          if crossCheckEntry.user.id != myUserId then continue
-
           overlap = false
           startDate = new Date(myStart)
           day = getDayAbbrev(startDate.getUTCDay())
@@ -157,32 +155,6 @@ processSchedules = (allSchedules, days = [], cb) ->
     cb null, "OK"
   else
     cb null, _.uniq(messages)
-
-overrideUser = (userId, scheduleId, durationInMinutes = 30, cb) ->
-  if userId and scheduleId
-
-    duration = durationInMinutes * 60 * 1000
-    startDate = new Date()
-    endDate = new Date(startDate.getTime() + duration)
-
-    sharedOptions =
-      method: 'POST'
-      json: false
-      headers:
-        'Authorization': 'Token token=' + nconf.get('PAGERDUTY_TOKEN')
-      form:
-        override:
-          "user_id": userId
-          "start": startDate.toISOString()
-          "end": endDate.toISOString()
-
-    pd_api.send "/schedules/#{scheduleId}/overrides", sharedOptions, (err, res, body) ->
-      if err then return cb err
-      if res.statusCode isnt 201 then return cb new Error(
-        "Entries returned status code #{res.statusCode}"
-      )
-      reponseObject = JSON.parse(body)
-      cb err, reponseObject.override
 
 getDayAbbrev = (utcDay) ->
   days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]

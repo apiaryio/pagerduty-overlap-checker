@@ -3,7 +3,7 @@ nconf     = require 'nconf'
 async     = require 'async'
 request   = require 'request'
 debug     = require('debug')('pagerduty-overrides:notifications')
-pd_api    = require './pagerduty-api'
+pdApi    = require './pagerduty-api'
 
 createPagerDutyIncident = (options, message, cb) ->
   debug("Creating PD incident #{JSON.stringify(message)} with options #{JSON.stringify(options)}")
@@ -44,7 +44,7 @@ createPagerDutyIncident = (options, message, cb) ->
         From: options.from
         Authorization: 'Token token=' + options.pdToken
 
-    pd_api.send '/incidents', incidentOptions, (err, res, body) ->
+    pdApi.send '/incidents', incidentOptions, (err, res, body) ->
       if body?.errors?.length > 0
         err ?= new Error "INCIDENT_CREATION_FAILED Errors: #{JSON.stringify body.errors}"
       if res?.statusCode isnt 200 and res?.statusCode isnt 201
@@ -107,7 +107,7 @@ send = (options, message, cb) ->
           slackOptions.webhookUrl = options['SLACK']?['SLACK_WEBHOOK_URL'] or options['SLACK_WEBHOOK_URL']
           createSlackMessage slackOptions, slackMessage, next
         else
-          console.log('No Slack webhook defined')
+          debug('No Slack webhook defined')
           next()
     (next) ->
         if not options['PAGERDUTY'] and not options['PAGERDUTY_TOKEN']
