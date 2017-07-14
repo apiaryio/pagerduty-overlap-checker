@@ -1,28 +1,9 @@
 async     = require 'async'
-request   = require 'request'
 nconf     = require 'nconf'
 _         = require 'underscore'
 debug     = require('debug')('pagerduty-overrides')
 notify    = require './notify'
-
-# Factory for sending request to PD API
-pdGet = (endpointPath, overrideOptions, cb) ->
-  debug("Calling #{endpointPath} with options:", overrideOptions)
-  sharedOptions =
-    uri: nconf.get('PAGERDUTY_API_URL') + endpointPath
-    method: 'GET'
-    json: true
-    headers:
-      'Authorization': 'Token token=' + nconf.get('PAGERDUTY_READ_ONLY_TOKEN')
-
-  if typeof overrideOptions is 'function'
-    cb = overrideOptions
-    overrideOptions = {}
-
-  _.extend sharedOptions, overrideOptions
-
-  debug('Calling request with: ', sharedOptions)
-  request sharedOptions, cb
+pdApi    = require './pagerduty-api'
 
 # Get schedule for ID and 2 weeks
 getSchedule = (id, cb) ->
@@ -32,28 +13,31 @@ getSchedule = (id, cb) ->
     timeUntil = new Date(timeNow.getTime() + nconf.get('WEEKS_TO_CHECK') * week)
 
     scheduleOpts =
-      form:
+      qs:
+        'schedule_ids[]': id
         until: timeUntil.toISOString()
         since: timeNow.toISOString()
 
-    pdGet "/schedules/#{id}/entries", scheduleOpts, (err, res, body) ->
-      if res.statusCode isnt 200 then return cb new Error(
-        "Entries returned status code #{res.statusCode}"
-      )
 
-      cb err, id: id, entries: body.entries
+    pdApi.send "/oncalls", scheduleOpts, (err, res, body) ->
+      if err
+        console.log "Request send error:", err
+        return cb err
+
+      if res.statusCode isnt 200 then return cb new Error("Entries returned status code #{res.statusCode}")
+      cb err, id: id, entries: body.oncalls
   else
     cb new Error "Missing WEEKS_TO_CHECK settings"
 
 # Get all schedules and returns their ids
 getSchedulesIds = (cb) ->
   debug("Getting schedules from PD")
-  pdGet "/schedules", {}, (err, res, body) ->
-    debug('Returned status code:', res.statusCode)
+  pdApi.send "/schedules", {}, (err, res, body) ->
     if err
-      console.log "Cannot get request:", err
+      console.log "Request send error:", err
       return cb err
 
+    debug('Returned status code:', res.statusCode)
     schedulesIds = []
 
     for schedule in body.schedules
@@ -63,7 +47,7 @@ getSchedulesIds = (cb) ->
       nconf.set("schedulesNames:#{schedule.id}", schedule.name)
 
     debug("Schedules Ids from PD: ", schedulesIds)
-    debug("Schedules Names from PD: ", debug(nconf.get("schedulesNames")))
+    debug("Schedules Names from PD: ", nconf.get("schedulesNames"))
     cb null, schedulesIds
 
 # Check if all schedules defined in config are available in PD
@@ -72,8 +56,8 @@ checkSchedulesIds = (cb) ->
   listIds = []
   for ids in configSchedules
     listIds.push ids['SCHEDULE']
-  debug("Schedules Ids from config: ", _.flatten(listIds))
   configSchedulesIds =  _.uniq(_.flatten(listIds))
+  debug("Schedules Ids from config: ", configSchedulesIds)
   getSchedulesIds (err, schedulesIds) ->
     if err then return cb err
     debug('intersection: ', _.intersection(configSchedulesIds, schedulesIds).length)
@@ -119,18 +103,15 @@ processSchedules = (allSchedules, days = [], cb) ->
   duplicities = {}
   debug('allSchedules:', allSchedules)
   for schedule in allSchedules
-    debug('schedule:', schedule)
+    debug('schedule:', JSON.stringify(schedule))
     otherSchedules = _.without(allSchedules, schedule)
-    debug('otherSchedules:',otherSchedules)
+    debug('otherSchedules:',JSON.stringify(otherSchedules))
     for entry in schedule.entries
+      debug('checking entry: ', JSON.stringify(entry))
       myStart = entry.start
-      debug(myStart)
       myEnd = entry.end
-      debug(myEnd)
       myUserId = entry.user.id
-      debug(myUserId)
-      myUserName = entry.user.name
-      debug(myUserName)
+      myUserName = entry.user.summary
       duplicities.myUserName ?= []
       for crossSchedule in otherSchedules
         for crossCheckEntry in crossSchedule.entries
@@ -141,7 +122,7 @@ processSchedules = (allSchedules, days = [], cb) ->
           scheduleId = nconf.get("schedulesNames:#{schedule.id}")
           crossScheduleId = nconf.get("schedulesNames:#{crossSchedule.id}")
 
-          message = {user: myUserName, schedules: [scheduleId, crossScheduleId], date: startDate}
+          message = {user: myUserName, userId: myUserId, schedules: [scheduleId, crossScheduleId], date: startDate}
 
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId
@@ -175,58 +156,15 @@ processSchedules = (allSchedules, days = [], cb) ->
   else
     cb null, _.uniq(messages)
 
-getUserId = (email, cb) ->
-
-  userOptions =
-    form:
-      query: email
-
-  pdGet "/users", userOptions, (err, res, body) ->
-    if res.statusCode isnt 200 then return cb new Error(
-      "Entries returned status code #{res.statusCode}"
-    )
-    userId = body.users[0].id
-    cb err, userId
-
-overrideUser = (userId, scheduleId, durationInMinutes = 30, cb) ->
-  if userId and scheduleId
-
-    duration = durationInMinutes * 60 * 1000
-    startDate = new Date()
-    endDate = new Date(startDate.getTime() + duration)
-
-    sharedOptions =
-      uri: nconf.get('PAGERDUTY_API_URL') + "/schedules/#{scheduleId}/overrides"
-      method: 'POST'
-      headers:
-        'Authorization': 'Token token=' + nconf.get('PAGERDUTY_TOKEN')
-      form:
-        override:
-          "user_id": userId
-          "start": startDate.toISOString()
-          "end": endDate.toISOString()
-
-    debug('Calling request with: ', sharedOptions)
-    request sharedOptions, (err, res, body) ->
-      if err then return cb err
-      if res.statusCode isnt 201 then return cb new Error(
-        "Entries returned status code #{res.statusCode}"
-      )
-      reponseObject = JSON.parse(body)
-      cb err, reponseObject.override
-
 getDayAbbrev = (utcDay) ->
   days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
   return days[utcDay]
 
 module.exports = {
-  pdGet
   getSchedulesIds
   checkSchedulesIds
   processSchedules
   processSchedulesFromConfig
   sendNotification
-  getUserId
-  overrideUser
 }

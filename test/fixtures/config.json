@@ -1,5 +1,4 @@
 {
-	"PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
 	"PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
 	"WEEKS_TO_CHECK": 2,
 	"SCHEDULES": [{
@@ -9,7 +8,11 @@
 				"SLACK_WEBHOOK_URL": "https://incomingUrl/",
 				"CHANNEL": "#channel-name"
 			},
-			"PAGERDUTY_TOKEN" : "111111111111"
+			"PAGERDUTY": {
+				"PAGERDUTY_TOKEN": "111111111111",
+				"PAGERDUTY_SERVICE_ID": "PFARE53",
+				"PAGERDUTY_FROM": "test@test.com"
+			}
 		}
 	}]
 }

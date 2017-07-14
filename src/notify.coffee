@@ -3,25 +3,50 @@ nconf     = require 'nconf'
 async     = require 'async'
 request   = require 'request'
 debug     = require('debug')('pagerduty-overrides:notifications')
+pdApi    = require './pagerduty-api'
 
 createPagerDutyIncident = (options, message, cb) ->
-  debug("Creating PD incident #{options.description}")
+  debug("Creating PD incident #{JSON.stringify(message)} with options #{JSON.stringify(options)}")
 
-  unless options.serviceKey
-    cb new Error "Missing PD service key"
+  unless options.pdToken and options.serviceId and options.from
+    cb new Error "Missing PAGERDUTY settings (you'll need PAGERDUTY_TOKEN, PAGERDUTY_SERVICE_ID and PAGERDUTY_ESCALATION_POLICY_ID)"
+
+  unless message.userId or options.escalationPolicyId
+    cb new Error "No userId or escalation policy specified"
+
   else
+    incident =
+      type: "incident"
+      title: "On-call overlap found!"
+      service:
+        id: options.serviceId
+        type: "service_reference"
+      body:
+        type: "incident_body"
+        details: message.messages.join('\n')
 
-    request
-      uri:  'https://events.pagerduty.com/generic/2010-04-15/create_event.json'
+    if options.escalationPolicyId
+      incident.escalationPolicy =
+        id: options.escalationPolicyId
+        type: "escalation_policy_reference"
+    else
+      incident.assignments = [
+        assignee :
+          id: message.userId
+          type: "user_reference"
+      ]
+
+    incidentOptions =
       method: "POST"
       json:
-        service_key: options.serviceKey
-        event_type: "trigger",
-        description: "On-call overlap found!"
-        details: message
-    , (err, res, body) ->
+        incident: incident
+      headers:
+        From: options.from
+        Authorization: 'Token token=' + options.pdToken
+
+    pdApi.send '/incidents', incidentOptions, (err, res, body) ->
       if body?.errors?.length > 0
-        err ?= new Error "INCIDENT_CREATION_FAILED Cannot create event: #{JSON.stringify body.errors}"
+        err ?= new Error "INCIDENT_CREATION_FAILED Errors: #{JSON.stringify body.errors}"
       if res?.statusCode isnt 200 and res?.statusCode isnt 201
         err ?= new Error "INCIDENT_CREATION_FAILED Creating incident failed with status #{res.statusCode}. Returned body: #{JSON.stringify body}"
       if err
@@ -49,15 +74,18 @@ formatMessage = (messages, option = 'plain') ->
       when 'plain'
         outputMessage = "_Following overlaps found:_\n"
         for message in messages
-          outputMessage += """#{message.user}: #{message.schedules[0]} and #{message.schedules[1]} on #{message.date.toLocaleString()}\n"""
+          outputMessage += """#{message.user}: #{message.schedules[0]} and #{message.schedules[1]} on #{message.date.toUTCString()}\n"""
       when 'markdown'
         outputMessage = "Following overlaps found:\n"
         for message in messages
-          outputMessage += """*#{message.user}:* `#{message.schedules[0]}` and `#{message.schedules[1]}` on #{message.date.toLocaleString()}\n"""
+          outputMessage += """*#{message.user}:* `#{message.schedules[0]}` and `#{message.schedules[1]}` on #{message.date.toUTCString()}\n"""
       when 'json'
         outputMessage = messages.reduce((acc, curr)->
-          acc[curr.user] ?= []
-          acc[curr.user].push("#{curr.schedules[0]} and #{curr.schedules[1]} on #{curr.date.toLocaleString()}")
+          acc[curr.userId] ?= {}
+          acc[curr.userId].userId ?= curr.userId
+          acc[curr.userId].user ?= curr.user
+          acc[curr.userId].messages ?= []
+          acc[curr.userId].messages.push("#{curr.schedules[0]} and #{curr.schedules[1]} #{curr.date.toUTCString()}")
           return acc
         , {})
 
@@ -82,14 +110,23 @@ send = (options, message, cb) ->
           debug('No Slack webhook defined')
           next()
     (next) ->
-        if options['PAGERDUTY_TOKEN']?
+        if not options['PAGERDUTY'] and not options['PAGERDUTY_TOKEN']
+          debug('No PAGERDUTY options defined')
+        else if (options['PAGERDUTY']['PAGERDUTY_TOKEN'] or options['PAGERDUTY_TOKEN']) and options['PAGERDUTY']['PAGERDUTY_SERVICE_ID'] and options['PAGERDUTY']['PAGERDUTY_FROM']
           debug('Found PD token - creating an incident')
           pdOptions = {}
-          pdOptions.serviceKey = options['PAGERDUTY_TOKEN']
-          pdOptions.description = message
-          createPagerDutyIncident pdOptions, formatMessage(message, 'json'), next
+          pdOptions.pdToken = options['PAGERDUTY']['PAGERDUTY_TOKEN'] or options['PAGERDUTY_TOKEN']
+          pdOptions.serviceId = options['PAGERDUTY']['PAGERDUTY_SERVICE_ID']
+          pdOptions.escalationPolicyId = options['PAGERDUTY']['PAGERDUTY_ESCALATION_POLICY_ID']
+          pdOptions.from = options['PAGERDUTY']?['PAGERDUTY_FROM']
+          messagesByUser = formatMessage(message, 'json')
+          async.each(messagesByUser,
+            (item, cb) ->
+              createPagerDutyIncident pdOptions, item, cb
+            (err) ->
+              next err)
         else
-          debug('No PD token defined')
+          console.log("No PD options defined or defined incorrectly (#{JSON.stringify(options['PAGERDUTY'])})")
           next()
     ], (err, results) ->
       if err then return cb err

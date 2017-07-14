@@ -16,25 +16,37 @@ describe 'Test send message using notify.send for both', ->
   actual = null
 
   before (done) ->
+    message =
+      user: 'Test user'
+      userId: '1234'
+      schedules: ['TEST1', 'TEST2']
+      date: new Date()
 
     expectBody =
-      text:"Message"
+      text:"Following overlaps found:\n*Test user:* `TEST1` and `TEST2` on #{message.date.toUTCString()}\n"
       channel:"#channel-name"
 
     config.setupConfig configPath, (err) ->
       if err then return done err
-      nock('https://incomingUrl').post("/", expectBody)
-      .reply(200, 'ok')
+      nock('https://incomingUrl')
+        .post("/", expectBody)
+        .query(true)
+        .reply(200, 'ok')
 
-      nock('https://events.pagerduty.com')
-      .post("/generic/2010-04-15/create_event.json")
-      .reply(200, 'ok')
+      nock('https://api.pagerduty.com/')
+        .post('/incidents')
+        .query(true)
+        .reply(200, 'ok')
 
       configSchedules = nconf.get('SCHEDULES')
       options = configSchedules[0]['NOTIFICATIONS']
-      message = "Message"
+      message =
+        user: 'Test user'
+        userId: '1234'
+        schedules: ['TEST1', 'TEST2']
+        date: new Date()
 
-      notify.send options, message, (err, result) ->
+      notify.send options, [ message ], (err, result) ->
         if err then return done err
         actual = result
         done()

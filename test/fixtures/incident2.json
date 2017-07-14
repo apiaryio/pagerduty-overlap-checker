@@ -1,0 +1,22 @@
+{
+  "incident": {
+    "type": "incident",
+    "title": "On-call overlap found!",
+    "service": {
+      "id": "PFARE53",
+      "type": "service_reference"
+    },
+    "body": {
+      "type": "incident_body",
+      "details": "Primary and Secondary Sun, 19 Aug 2012 04:00:00 GMT"
+    },
+    "assignments": [
+      {
+        "assignee": {
+          "id": "PRT2T0A",
+          "type": "user_reference"
+        }
+      }
+    ]
+  }
+}

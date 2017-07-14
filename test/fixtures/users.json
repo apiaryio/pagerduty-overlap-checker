@@ -3,18 +3,31 @@
     {
       "id": "PP1565R",
       "name": "John Smith",
+      "summary": "John Smith",
       "email": "john@example.com",
       "time_zone": "Eastern Time (US & Canada)",
       "color": "grey20",
       "role": "user",
       "avatar_url": "https://secure.gravatar.com/avatar/2e32280905f296791ed387cd0f61ec6b.png?d=mm&r=PG",
       "user_url": "/users/PP1565R",
-      "invitation_sent": true
+      "invitation_sent": true,
+      "billed": true,
+      "description": "",
+      "contact_methods": [
+      ],
+      "notification_rules": [
+      ],
+      "job_title": "Developer",
+      "teams": [],
+      "coordinated_incidents": [],
+      "type": "user",
+      "self": "https://api.pagerduty.com/users/PP1565R",
+      "html_url": "https://apiary.pagerduty.com/users/PP1565R"
     }
   ],
-  "active_account_users": 1,
   "limit": 25,
   "query": "john",
   "offset": 0,
-  "total": 1
+  "total": 1,
+  "more": true
 }
