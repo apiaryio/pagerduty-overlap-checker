@@ -9,7 +9,7 @@ createPagerDutyIncident = (options, message, cb) ->
   debug("Creating PD incident #{JSON.stringify(message)} with options #{JSON.stringify(options)}")
 
   unless options.pdToken and options.serviceId and options.from
-    cb new Error "Missing PAGERDUTY settings (you'll need PAGERDUTY_TOKEN, PAGERDUTY_SERVICE_ID and PAGERDUTY_ESCALATION_POLICY_ID)"
+    cb new Error "Missing PAGERDUTY settings (you'll need PAGERDUTY_TOKEN, PAGERDUTY_SERVICE_ID and PAGERDUTY_FROM)"
 
   unless message.userId or options.escalationPolicyId
     cb new Error "No userId or escalation policy specified"
