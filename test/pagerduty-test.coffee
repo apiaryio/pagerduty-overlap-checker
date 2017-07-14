@@ -5,7 +5,6 @@ debug    = require('debug')('pagerduty-overrides:tests')
 
 config   = require '../src/config'
 pd       = require '../src/pagerduty'
-pd_api   = require '../src/pagerduty-api'
 
 configPath = __dirname + '/fixtures/config.json'
 configWithDaysPath = __dirname + '/fixtures/config-days.json'

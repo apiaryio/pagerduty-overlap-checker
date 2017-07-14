@@ -103,9 +103,9 @@ processSchedules = (allSchedules, days = [], cb) ->
   duplicities = {}
   debug('allSchedules:', allSchedules)
   for schedule in allSchedules
-#    debug('schedule:', JSON.stringify(schedule))
+    debug('schedule:', JSON.stringify(schedule))
     otherSchedules = _.without(allSchedules, schedule)
-#    debug('otherSchedules:',JSON.stringify(otherSchedules))
+    debug('otherSchedules:',JSON.stringify(otherSchedules))
     for entry in schedule.entries
       debug('checking entry: ', JSON.stringify(entry))
       myStart = entry.start
