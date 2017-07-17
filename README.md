@@ -52,7 +52,7 @@ When generating an API token, select the v2 option.
           },
           "SLACK_WEBHOOK_URL": "http://acme.slack.com/11111"
         },
-        "EXCLUSION_DAYS": {"Fri": {"start": "14:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "14:00"}}
+        "EXCLUSION_DAYS": {"Fri": {"start": "16:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "16:00"}}
     }]
 }
 ```
