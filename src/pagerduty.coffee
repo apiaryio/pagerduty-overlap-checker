@@ -76,16 +76,18 @@ processSchedulesFromConfig = (done) ->
     async.mapSeries processedConfig['SCHEDULE'], (i, next) ->
       getSchedule i, next
     , (err, results) ->
-      if err then cb err
+      if err then return cb err
       if results
         processSchedules results, processedConfig['EXCLUSION_DAYS'], (err, message) ->
-          messages = messages.concat(message)
           debug('processSchedules:', processedConfig)
-          if processedConfig['NOTIFICATIONS'] && message isnt "OK"
-            debug('Sending notifications.')
-            sendNotification processedConfig['NOTIFICATIONS'], message, cb
+          if message isnt "OK"
+            messages = messages.concat(message)
+            if processedConfig['NOTIFICATIONS']
+              debug('Sending notifications.')
+              sendNotification processedConfig['NOTIFICATIONS'], message, cb
+          return cb()
       else
-        cb new Error "No schedule to process."
+        return cb new Error "No schedule to process."
   , (err) ->
     if err then return done err
     done null, messages
