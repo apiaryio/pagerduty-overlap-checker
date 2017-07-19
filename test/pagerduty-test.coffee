@@ -111,9 +111,11 @@ describe 'Compare schedules', ->
           message = msg
           done err
 
-  it 'Check returned messages if containes "Primary and Secondary"', ->
+  it 'Check if there are 2 returned messages', ->
     assert.isArray message
     assert.lengthOf message, 2
+
+  it 'Check returned messages if they contain "Primary and Secondary"', ->
     for singleMessage in message
       debug(singleMessage)
       assert.isObject singleMessage
@@ -159,11 +161,48 @@ describe 'Compare schedules on specific days', ->
           message = msg
           done err
 
-  it 'Check returned messages if containes "Primary and Secondary"', ->
+  it 'Check if there is 1 returned message', ->
     assert.isArray message
     assert.lengthOf message, 1
+
+  it 'Check if the returned message contains "Primary and Secondary"', ->
     for singleMessage in message
       debug(singleMessage)
       assert.isObject singleMessage
       assert.include singleMessage.schedules, "Primary"
       assert.include singleMessage.schedules, "Secondary"
+
+describe 'Compare schedules with no overlap', ->
+
+  message = null
+
+  before (done) ->
+    config.setupConfig configPath, (err) ->
+      if err then return done err
+      nock('https://api.pagerduty.com/')
+      .get('/schedules')
+      .query(true)
+      .replyWithFile(200, __dirname + '/fixtures/schedules.json')
+
+      nock('https://api.pagerduty.com/')
+      .get('/oncalls')
+      .query(true)
+      .replyWithFile(200, __dirname + '/fixtures/entries.json')
+
+      nock('https://api.pagerduty.com/')
+      .get('/oncalls')
+      .query(true)
+      .replyWithFile(200, __dirname + '/fixtures/entries-no-overlap.json')
+
+      pd.checkSchedulesIds (err, res) ->
+        if err then return done err
+        unless res
+          return done new Error("Check failed")
+        pd.processSchedulesFromConfig (err, msg) ->
+          if err then return done err
+          message = msg
+          done err
+
+  it 'Check that there are no returned messages', ->
+    assert.isArray message
+    assert.isEmpty message
