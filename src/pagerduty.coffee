@@ -84,7 +84,7 @@ processSchedulesFromConfig = (done) ->
             messages = messages.concat(message)
             if processedConfig['NOTIFICATIONS']
               debug('Sending notifications.')
-              sendNotification processedConfig['NOTIFICATIONS'], message, cb
+              return sendNotification processedConfig['NOTIFICATIONS'], message, cb
           return cb()
       else
         return cb new Error "No schedule to process."
