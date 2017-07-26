@@ -16,14 +16,16 @@ describe 'Test send message using notify.send for both', ->
   actual = null
 
   before (done) ->
+    overlapDate = new Date()
     message =
       user: 'Test user'
       userId: '1234'
       schedules: ['TEST1', 'TEST2']
-      date: new Date()
+      date: overlapDate
+      crossDate: overlapDate
 
     expectBody =
-      text:"Following overlaps found:\n*Test user:* `TEST1` and `TEST2` on #{message.date.toUTCString()}\n"
+      text:"Following overlaps found:\n*Test user:* `TEST1` and `TEST2` (the first starting on #{overlapDate.toUTCString()}, the second on #{overlapDate.toUTCString()})\n"
       channel:"#channel-name"
 
     config.setupConfig configPath, (err) ->
@@ -44,7 +46,8 @@ describe 'Test send message using notify.send for both', ->
         user: 'Test user'
         userId: '1234'
         schedules: ['TEST1', 'TEST2']
-        date: new Date()
+        date: overlapDate
+        crossDate: overlapDate
 
       notify.send options, [ message ], (err, result) ->
         if err then return done err

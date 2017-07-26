@@ -124,7 +124,7 @@ processSchedules = (allSchedules, days = [], cb) ->
           scheduleId = nconf.get("schedulesNames:#{schedule.id}")
           crossScheduleId = nconf.get("schedulesNames:#{crossSchedule.id}")
 
-          message = {user: myUserName, userId: myUserId, schedules: [scheduleId, crossScheduleId], date: startDate}
+          message = {user: myUserName, userId: myUserId, schedules: [scheduleId, crossScheduleId], date: startDate, crossDate: new Date(crossCheckEntry.start)}
 
           if myStart <= crossCheckEntry.start < myEnd and
               crossCheckEntry.user.id == myUserId
