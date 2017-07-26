@@ -74,18 +74,18 @@ formatMessage = (messages, option = 'plain') ->
       when 'plain'
         outputMessage = "_Following overlaps found:_\n"
         for message in messages
-          outputMessage += """#{message.user}: #{message.schedules[0]} and #{message.schedules[1]} on #{message.date.toUTCString()}\n"""
+          outputMessage += """#{message.user}: #{message.schedules[0]} and #{message.schedules[1]} (the first starting on #{message.date.toUTCString()}, the second on #{message.crossDate.toUTCString()})\n"""
       when 'markdown'
         outputMessage = "Following overlaps found:\n"
         for message in messages
-          outputMessage += """*#{message.user}:* `#{message.schedules[0]}` and `#{message.schedules[1]}` on #{message.date.toUTCString()}\n"""
+          outputMessage += """*#{message.user}:* `#{message.schedules[0]}` and `#{message.schedules[1]}` (the first starting on #{message.date.toUTCString()}, the second on #{message.crossDate.toUTCString()})\n"""
       when 'json'
         outputMessage = messages.reduce((acc, curr)->
           acc[curr.userId] ?= {}
           acc[curr.userId].userId ?= curr.userId
           acc[curr.userId].user ?= curr.user
           acc[curr.userId].messages ?= []
-          acc[curr.userId].messages.push("#{curr.schedules[0]} and #{curr.schedules[1]} #{curr.date.toUTCString()}")
+          acc[curr.userId].messages.push("#{curr.schedules[0]} and #{curr.schedules[1]} (the first starting on #{curr.date.toUTCString()}, the second on #{curr.crossDate.toUTCString()})")
           return acc
         , {})
 
