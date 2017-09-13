@@ -1,18 +1,25 @@
-fs    = require 'fs'
-nconf = require 'nconf'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const fs    = require('fs');
+const nconf = require('nconf');
 
-setupConfig = (configPath, cb) ->
-  if fs.existsSync(configPath)
-    console.log 'Loading config from :', configPath
-    # Priority order argv before ENV and file as defaults
+const setupConfig = function(configPath, cb) {
+  if (fs.existsSync(configPath)) {
+    console.log('Loading config from :', configPath);
+    // Priority order argv before ENV and file as defaults
     nconf.argv()
       .env()
-      .file({ file: configPath })
-    process.env.DEBUG = nconf.get('DEBUG')
-    cb()
-  else
-    cb new Error "Config does not exist: #{configPath}"
+      .file({ file: configPath });
+    process.env.DEBUG = nconf.get('DEBUG');
+    return cb();
+  } else {
+    return cb(new Error(`Config does not exist: ${configPath}`));
+  }
+};
 
 module.exports = {
   setupConfig
-}
+};

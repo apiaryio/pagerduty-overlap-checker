@@ -1,58 +1,69 @@
-assert   = require('chai').assert
-nock     = require 'nock'
-nconf    = require 'nconf'
-debug    = require('debug')('pagerduty-overrides:tests')
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const { assert }   = require('chai');
+const nock     = require('nock');
+const nconf    = require('nconf');
+const debug    = require('debug')('pagerduty-overrides:tests');
 
-config   = require '../src/config'
-notify   = require '../src/notify'
+const config   = require('../src/config');
+const notify   = require('../src/notify');
 
-configPath = __dirname + '/fixtures/config.json'
+const configPath = __dirname + '/fixtures/config.json';
 
 nock.disableNetConnect();
 
-# https://github.com/chenka/node-slackr/blob/master/test/index.coffee
-describe 'Test send message using notify.send for both', ->
+// https://github.com/chenka/node-slackr/blob/master/test/index.coffee
+describe('Test send message using notify.send for both', function() {
 
-  actual = null
+  let actual = null;
 
-  before (done) ->
-    overlapDate = new Date()
-    message =
-      user: 'Test user'
-      userId: '1234'
-      schedules: ['TEST1', 'TEST2']
-      date: overlapDate
+  before(function(done) {
+    const overlapDate = new Date();
+    let message = {
+      user: 'Test user',
+      userId: '1234',
+      schedules: ['TEST1', 'TEST2'],
+      date: overlapDate,
       crossDate: overlapDate
+    };
 
-    expectBody =
-      text:"Following overlaps found:\n*Test user:* `TEST1` and `TEST2` (the first starting on #{overlapDate.toUTCString()}, the second on #{overlapDate.toUTCString()})\n"
+    const expectBody = {
+      text:`Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (the first starting on ${overlapDate.toUTCString()}, the second on ${overlapDate.toUTCString()})\n`,
       channel:"#channel-name"
+    };
 
-    config.setupConfig configPath, (err) ->
-      if err then return done err
+    return config.setupConfig(configPath, function(err) {
+      if (err) { return done(err); }
       nock('https://incomingUrl')
         .post("/", expectBody)
         .query(true)
-        .reply(200, 'ok')
+        .reply(200, 'ok');
 
       nock('https://api.pagerduty.com/')
         .post('/incidents')
         .query(true)
-        .reply(200, 'ok')
+        .reply(200, 'ok');
 
-      configSchedules = nconf.get('SCHEDULES')
-      options = configSchedules[0]['NOTIFICATIONS']
-      message =
-        user: 'Test user'
-        userId: '1234'
-        schedules: ['TEST1', 'TEST2']
-        date: overlapDate
+      const configSchedules = nconf.get('SCHEDULES');
+      const options = configSchedules[0]['NOTIFICATIONS'];
+      message = {
+        user: 'Test user',
+        userId: '1234',
+        schedules: ['TEST1', 'TEST2'],
+        date: overlapDate,
         crossDate: overlapDate
+      };
 
-      notify.send options, [ message ], (err, result) ->
-        if err then return done err
-        actual = result
-        done()
+      return notify.send(options, [ message ], function(err, result) {
+        if (err) { return done(err); }
+        actual = result;
+        return done();
+      });
+    });
+  });
 
-  it 'Check result from send notification', ->
-    assert.equal 'ok', actual
+  return it('Check result from send notification', () => assert.equal('ok', actual));
+});
