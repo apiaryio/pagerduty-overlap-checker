@@ -2,17 +2,13 @@
   "name": "pagerduty-overlap-checker",
   "version": "0.0.0-semantically-released",
   "description": "PagerDuty Overlap Duties Checker",
-  "main": "lib/",
+  "main": "src/",
   "bin": {
     "pdoverrides": "bin/pdoverrides"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\"",
-    "integration": "./node_modules/.bin/mocha --compilers \"coffee:coffee-script/register\" --recursive",
+    "test": "./node_modules/.bin/mocha",
     "lint": "conventional-changelog-lint --from=master && eslint ./src",
-    "compile": "coffee -b -c -o lib/ src/",
-    "pretest": "npm run compile",
-    "prepublish": "npm run compile",
     "coverage": "./scripts/cov",
     "coveralls": "npm run coverage && cat ./cov.info | ./node_modules/coveralls/bin/coveralls.js",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
@@ -40,8 +36,6 @@
   },
   "devDependencies": {
     "chai": "",
-    "coffee-coverage": "^0.7.0",
-    "coffee-script": "1.10.0",
     "conventional-changelog-lint": "^1.1.9",
     "coveralls": "~2.11.2",
     "eslint": "^4.6.1",
