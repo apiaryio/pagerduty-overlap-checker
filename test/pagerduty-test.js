@@ -1,36 +1,31 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-const { assert }   = require('chai');
-const nock     = require('nock');
-const nconf    = require('nconf');
-const debug    = require('debug')('pagerduty-overrides:tests');
+const { assert } = require('chai');
+const nock = require('nock');
+const debug = require('debug')('pagerduty-overrides:tests');
 
-const config   = require('../src/config');
-const pd       = require('../src/pagerduty');
+const config = require('../src/config');
+const pd = require('../src/pagerduty');
 
-const configPath = __dirname + '/fixtures/config.json';
-const configWithDaysPath = __dirname + '/fixtures/config-days.json';
-const configWrongPath = __dirname + '/fixtures/config-wrong.json';
+const configPath = `${__dirname}/fixtures/config.json`;
+const configWithDaysPath = `${__dirname}/fixtures/config-days.json`;
+const configWrongPath = `${__dirname}/fixtures/config-wrong.json`;
+
+const incident = require('./fixtures/incident.json');
+const incident2 = require('./fixtures/incident2.json');
 
 nock.disableNetConnect();
 
-describe('Get schedules Ids', function() {
+describe('Get schedules Ids', () => {
   let schedules = null;
 
   before(done =>
-    config.setupConfig(configPath, function(err) {
-      if (err) { return done(err); }
+    config.setupConfig(configPath, (configErr) => {
+      if (configErr) { return done(configErr); }
       nock('https://api.pagerduty.com/')
         .get('/schedules')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/schedules.json');
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
 
-      return pd.getSchedulesIds(function(err, schedulesIds) {
+      return pd.getSchedulesIds((err, schedulesIds) => {
         schedules = schedulesIds;
         return done(err);
       });
@@ -40,19 +35,19 @@ describe('Get schedules Ids', function() {
   return it('Check how many schedules', () => assert.equal(schedules.length, 2));
 });
 
-describe('Check schedules', function() {
+describe('Check schedules', () => {
   let schedules = null;
 
   before(done =>
-    config.setupConfig(configPath, function(err) {
-      if (err) { return done(err); }
+    config.setupConfig(configPath, (configErr) => {
+      if (configErr) { return done(configErr); }
 
       nock('https://api.pagerduty.com/')
         .get('/schedules')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/schedules.json');
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
 
-      return pd.checkSchedulesIds(function(err, res) {
+      return pd.checkSchedulesIds((err, res) => {
         schedules = res;
         return done(err);
       });
@@ -62,19 +57,19 @@ describe('Check schedules', function() {
   return it('Check if config ids are in pagerduty schedules', () => assert.ok(schedules));
 });
 
-describe('Check schedules with wrong config', function() {
+describe('Check schedules with wrong config', () => {
   let schedules = null;
 
   before(done =>
-    config.setupConfig(configWrongPath, function(err) {
-      if (err) { return done(err); }
+    config.setupConfig(configWrongPath, (configErr) => {
+      if (configErr) { return done(configErr); }
 
       nock('https://api.pagerduty.com/')
         .get('/schedules')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/schedules.json');
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
 
-      return pd.checkSchedulesIds(function(err, res) {
+      return pd.checkSchedulesIds((err, res) => {
         schedules = res;
         return done(err);
       });
@@ -84,46 +79,45 @@ describe('Check schedules with wrong config', function() {
   return it('Check if config ids are in pagerduty schedules', () => assert.notOk(schedules));
 });
 
-describe('Compare schedules', function() {
-
+describe('Compare schedules', () => {
   let message = null;
 
   before(done =>
-    config.setupConfig(configPath, function(err) {
-      if (err) { return done(err); }
+    config.setupConfig(configPath, (configErr) => {
+      if (configErr) { return done(configErr); }
       nock('https://api.pagerduty.com/')
         .get('/schedules')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/schedules.json');
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
 
       nock('https://api.pagerduty.com/')
         .get('/oncalls')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/entries.json');
+        .replyWithFile(200, `${__dirname}/fixtures/entries.json`);
 
       nock('https://api.pagerduty.com/')
         .get('/oncalls')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/entries.json');
+        .replyWithFile(200, `${__dirname}/fixtures/entries.json`);
 
       nock('https://api.pagerduty.com/')
-        .post('/incidents', require('./fixtures/incident.json'))
+        .post('/incidents', incident)
         .query(true)
         .reply(200, 'ok');
 
       nock('https://api.pagerduty.com/')
-        .post('/incidents', require('./fixtures/incident2.json'))
+        .post('/incidents', incident2)
         .query(true)
         .reply(200, 'ok');
 
-      nock('https://incomingUrl/').post("/").reply(200, 'ok');
+      nock('https://incomingUrl/').post('/').reply(200, 'ok');
 
-      return pd.checkSchedulesIds(function(err, res) {
-        if (err) { return done(err); }
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
         if (!res) {
-          return done(new Error("Check failed"));
+          return done(new Error('Check failed'));
         }
-        return pd.processSchedulesFromConfig(function(err, msg) {
+        return pd.processSchedulesFromConfig((err, msg) => {
           if (err) { return done(err); }
           message = msg;
           return done(err);
@@ -132,7 +126,7 @@ describe('Compare schedules', function() {
     })
   );
 
-  it('Check if there are 2 returned messages', function() {
+  it('Check if there are 2 returned messages', () => {
     assert.isArray(message);
     return assert.lengthOf(message, 2);
   });
@@ -140,53 +134,52 @@ describe('Compare schedules', function() {
   return it('Check returned messages if they contain "Primary and Secondary"', () =>
     (() => {
       const result = [];
-      for (let singleMessage of Array.from(message)) {
+      message.forEach((singleMessage) => {
         debug(singleMessage);
         assert.isObject(singleMessage);
-        assert.include(singleMessage.schedules, "Primary");
-        result.push(assert.include(singleMessage.schedules, "Secondary"));
-      }
+        assert.include(singleMessage.schedules, 'Primary');
+        result.push(assert.include(singleMessage.schedules, 'Secondary'));
+      });
       return result;
     })()
   );
 });
 
 
-describe('Compare schedules on specific days', function() {
-
+describe('Compare schedules on specific days', () => {
   let message = null;
 
   before(done =>
-    config.setupConfig(configWithDaysPath, function(err) {
-      if (err) { return done(err); }
+    config.setupConfig(configWithDaysPath, (configErr) => {
+      if (configErr) { return done(configErr); }
       nock('https://api.pagerduty.com/')
         .get('/schedules')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/schedules.json');
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
 
       nock('https://api.pagerduty.com/')
         .get('/oncalls')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/entries-days.json');
+        .replyWithFile(200, `${__dirname}/fixtures/entries-days.json`);
 
       nock('https://api.pagerduty.com/')
         .get('/oncalls')
         .query(true)
-        .replyWithFile(200, __dirname + '/fixtures/entries-days.json');
+        .replyWithFile(200, `${__dirname}/fixtures/entries-days.json`);
 
       nock('https://api.pagerduty.com/')
-        .post('/incidents', require('./fixtures/incident.json'))
+        .post('/incidents', incident)
         .query(true)
         .reply(200, 'ok');
 
-      nock('https://incomingUrl/').post("/").reply(200, 'ok');
+      nock('https://incomingUrl/').post('/').reply(200, 'ok');
 
-      return pd.checkSchedulesIds(function(err, res) {
-        if (err) { return done(err); }
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
         if (!res) {
-          return done(new Error("Check failed"));
+          return done(new Error('Check failed'));
         }
-        return pd.processSchedulesFromConfig(function(err, msg) {
+        return pd.processSchedulesFromConfig((err, msg) => {
           if (err) { return done(err); }
           message = msg;
           return done(err);
@@ -195,62 +188,57 @@ describe('Compare schedules on specific days', function() {
     })
   );
 
-  it('Check if there is 1 returned message', function() {
+  it('Check if there is 1 returned message', () => {
     assert.isArray(message);
     return assert.lengthOf(message, 1);
   });
 
-  return it('Check if the returned message contains "Primary and Secondary"', () =>
-    (() => {
-      const result = [];
-      for (let singleMessage of Array.from(message)) {
-        debug(singleMessage);
-        assert.isObject(singleMessage);
-        assert.include(singleMessage.schedules, "Primary");
-        result.push(assert.include(singleMessage.schedules, "Secondary"));
-      }
-      return result;
-    })()
-  );
+  it('Check if the returned message contains "Primary and Secondary"', () => {
+    message.forEach((singleMessage) => {
+      debug(singleMessage);
+      assert.isObject(singleMessage);
+      assert.include(singleMessage.schedules, 'Primary');
+      assert.include(singleMessage.schedules, 'Secondary');
+    });
+  });
 });
 
-describe('Compare schedules with no overlap', function() {
-
+describe('Compare schedules with no overlap', () => {
   let message = null;
 
-  before(done =>
-    config.setupConfig(configPath, function(err) {
-      if (err) { return done(err); }
+  before((done) => {
+    config.setupConfig(configPath, (configErr) => {
+      if (configErr) { return done(configErr); }
       nock('https://api.pagerduty.com/')
-      .get('/schedules')
-      .query(true)
-      .replyWithFile(200, __dirname + '/fixtures/schedules.json');
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
 
       nock('https://api.pagerduty.com/')
-      .get('/oncalls')
-      .query(true)
-      .replyWithFile(200, __dirname + '/fixtures/entries.json');
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/entries.json`);
 
       nock('https://api.pagerduty.com/')
-      .get('/oncalls')
-      .query(true)
-      .replyWithFile(200, __dirname + '/fixtures/entries-no-overlap.json');
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/entries-no-overlap.json`);
 
-      return pd.checkSchedulesIds(function(err, res) {
-        if (err) { return done(err); }
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
         if (!res) {
-          return done(new Error("Check failed"));
+          return done(new Error('Check failed'));
         }
-        return pd.processSchedulesFromConfig(function(err, msg) {
+        return pd.processSchedulesFromConfig((err, msg) => {
           if (err) { return done(err); }
           message = msg;
           return done(err);
         });
       });
-    })
-  );
+    });
+  });
 
-  return it('Check that there are no returned messages', function() {
+  return it('Check that there are no returned messages', () => {
     assert.isArray(message);
     return assert.isEmpty(message);
   });

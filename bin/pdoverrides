@@ -1,39 +1,33 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var fs = require('fs');
-var pjson = require('../package.json');
-var config = require('../lib/config');
-var fsAccess = require('fs-access');
-
-program
-  .command('check')
-  .description('Check PagerDuty Overlaps')
-  .action(runCheck);
+const program = require('commander');
+const pjson = require('../package.json');
+const config = require('../lib/config');
+const fsAccess = require('fs-access');
+const pd = require('../lib/pagerduty');
 
 function runCheck(configFile) {
-  fsAccess(configFile, function (err) {
+  fsAccess(configFile, (err) => {
     if (err) throw err;
-    config.setupConfig(configFile, function(err, res){
-      if (err) {
-        console.error(err);
+    config.setupConfig(configFile, (configErr) => {
+      if (configErr) {
+        console.error(configErr);
         process.exit(1);
       }
-      var pd = require('../lib/pagerduty');
-      pd.checkSchedulesIds(function(error, res) {
-        if (error) {
-          console.error("Check failed with error:", error)
+      pd.checkSchedulesIds((checkError, res) => {
+        if (checkError) {
+          console.error('Check failed with error:', checkError);
           process.exit(1);
         }
         if (!res) {
-          console.error("Check failed - empty response");
+          console.error('Check failed - empty response');
           process.exit(1);
         } else {
-          console.log("Config schedule IDs passed.");
-          pd.processSchedulesFromConfig(function(error, msg) {
+          console.log('Config schedule IDs passed.');
+          pd.processSchedulesFromConfig((error, msg) => {
             if (error) {
-              console.error("Error while processing schedules from config", error);
-              process.exit(1)
+              console.error('Error while processing schedules from config', error);
+              process.exit(1);
             }
             console.log(msg);
             process.exit(0);
@@ -42,13 +36,18 @@ function runCheck(configFile) {
       });
     });
   });
-};
+}
 
 program
-    .version(pjson.version)
-    .usage('check --config <path/to/config.json>')
-    .option('-c, --config', 'Path to config.json')
-    .parse(process.argv);
+  .command('check')
+  .description('Check PagerDuty Overlaps')
+  .action(runCheck);
+
+program
+  .version(pjson.version)
+  .usage('check --config <path/to/config.json>')
+  .option('-c, --config', 'Path to config.json')
+  .parse(process.argv);
 
 // default help
 if (!program.args.length) program.help();
