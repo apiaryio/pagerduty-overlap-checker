@@ -54,9 +54,9 @@ function createPagerDutyIncident(options, message, cb) {
 
   return pdApi.send('/incidents', incidentOptions, (err, res, body) => {
     let error = err;
-    if (!error && body !== undefined && body.errors !== undefined && body.errors.length > 0) {
+    if (!error && body && body.errors && body.errors.length > 0) {
       error = new Error(`INCIDENT_CREATION_FAILED Errors: ${JSON.stringify(body.errors)}`);
-    } else if (!error && res !== undefined && !(res.statusCode === 200 || res.statusCode === 201)) {
+    } else if (!error && res && !(res.statusCode === 200 || res.statusCode === 201)) {
       error = new Error(`INCIDENT_CREATION_FAILED Creating incident failed with status ${res.statusCode}. Returned body: ${JSON.stringify(body)}`);
     }
     if (error) {
