@@ -1,9 +1,7 @@
-src
 scripts
 test
 cov.info
 README.md
-example.coffee
 config.json
-coffeelint.json
 .travis.yml
+example.js
