@@ -4,3 +4,4 @@ cov.info
 README.md
 config.json
 .travis.yml
+example.js
