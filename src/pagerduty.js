@@ -120,27 +120,38 @@ function processSchedules(allSchedules, days = [], cb) {
         crossSchedule.entries.forEach((crossCheckEntry) => {
           let overlap = false;
           const startDate = new Date(myStart);
-          const day = getDayAbbrev(startDate.getUTCDay());
 
           const scheduleId = nconf.get(`schedulesNames:${schedule.id}`);
           const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
+          const crossCheckDate = new Date(crossCheckEntry.start);
 
           const message = {
             user: myUserName,
             userId: myUserId,
             schedules: [scheduleId, crossScheduleId],
             date: startDate,
-            crossDate: new Date(crossCheckEntry.start),
+            crossDate: crossCheckDate,
           };
 
           if ((myStart <= crossCheckEntry.start && crossCheckEntry.start < myEnd) &&
               (crossCheckEntry.user.id === myUserId)) {
             overlap = true;
 
-            if (Object.keys(daysArray).includes(day)) {
-              if (daysArray[day].start && daysArray[day].end) {
-                const exclusionStartTime = daysArray[day].start.split(':');
-                const exclusionEndTime = daysArray[day].end.split(':');
+
+            // either starting or crosscheck starting day can be on exclusion list
+            let overlappingDay = getDayAbbrev(startDate.getUTCDay());
+
+            if (!Object.keys(daysArray).includes(overlappingDay)) {
+              overlappingDay = getDayAbbrev(crossCheckDate.getUTCDay());
+            }
+            if (!Object.keys(daysArray).includes(overlappingDay)) {
+              overlappingDay = null;
+            }
+
+            if (overlappingDay) {
+              if (daysArray[overlappingDay].start && daysArray[overlappingDay].end) {
+                const exclusionStartTime = daysArray[overlappingDay].start.split(':');
+                const exclusionEndTime = daysArray[overlappingDay].end.split(':');
                 const exclusionStartDate = new Date(myStart);
                 exclusionStartDate.setUTCHours(exclusionStartTime[0]);
                 exclusionStartDate.setUTCMinutes(exclusionStartTime[1]);
