@@ -243,3 +243,44 @@ describe('Compare schedules with no overlap', () => {
     return assert.isEmpty(message);
   });
 });
+
+describe('Compare schedules with overlap on a weekend, with one shift starting sooner', () => {
+  let message = null;
+
+  before((done) => {
+    config.setupConfig(configWithDaysPath, (configErr) => {
+      if (configErr) { return done(configErr); }
+      nock('https://api.pagerduty.com/')
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/bug-27-entries.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/bug-27-entries-cross.json`);
+
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
+        if (!res) {
+          return done(new Error('Check failed'));
+        }
+        return pd.processSchedulesFromConfig((err, msg) => {
+          if (err) { return done(err); }
+          message = msg;
+          return done(err);
+        });
+      });
+    });
+  });
+
+  return it('Check that there are no returned messages', () => {
+    assert.isArray(message);
+    return assert.isEmpty(message);
+  });
+});
