@@ -117,14 +117,7 @@ function processSchedules(allSchedules, days = [], cb) {
           const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
           const crossCheckStart = moment.utc(crossCheckEntry.start);
           const crossCheckEnd = moment.utc(crossCheckEntry.end);
-
-          const message = {
-            user: myUserName,
-            userId: myUserId,
-            schedules: [scheduleId, crossScheduleId],
-            date: myStart,
-            crossDate: crossCheckStart,
-          };
+          let message;
 
           // is there an overlap?
           if ((crossCheckStart < myEnd && myStart < crossCheckEnd) &&
@@ -132,6 +125,14 @@ function processSchedules(allSchedules, days = [], cb) {
             // find overlapping inteval
             const overlapStart = moment.max(myStart, crossCheckStart);
             const overlapEnd = moment.min(crossCheckEnd, myEnd);
+
+            message = {
+              user: myUserName,
+              userId: myUserId,
+              schedules: [scheduleId, crossScheduleId],
+              overlapStart,
+              overlapEnd,
+            };
 
             [overlapStart, overlapEnd].forEach((day) => {
               overlap = true;

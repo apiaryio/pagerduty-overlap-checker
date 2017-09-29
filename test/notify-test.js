@@ -25,7 +25,7 @@ describe('Test send message using notify.send for both', () => {
     };
 
     const expectBody = {
-      text: `Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (the first starting on ${notify.toUTCString(overlapDate)}, the second on ${notify.toUTCString(overlapDate)})\n`,
+      text: `Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (from ${notify.toUTCString(overlapDate)} to ${notify.toUTCString(overlapDate)})\n`,
       channel: '#channel-name',
     };
 
@@ -47,8 +47,8 @@ describe('Test send message using notify.send for both', () => {
         user: 'Test user',
         userId: '1234',
         schedules: ['TEST1', 'TEST2'],
-        date: overlapDate,
-        crossDate: overlapDate,
+        overlapStart: overlapDate,
+        overlapEnd: overlapDate,
       };
 
       return notify.send(options, [message], (err, result) => {
