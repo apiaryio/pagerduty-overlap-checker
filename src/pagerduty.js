@@ -133,41 +133,37 @@ function processSchedules(allSchedules, days = [], cb) {
             crossDate: crossCheckDate,
           };
 
-          if ((myStart <= crossCheckEntry.start && crossCheckEntry.start < myEnd) &&
+          // is there an overlap?
+          if ((crossCheckEntry.start < myEnd && myStart < crossCheckEntry.end) &&
               (crossCheckEntry.user.id === myUserId)) {
-            overlap = true;
+            // find overlapping inteval
+            const overlapStart = myStart > crossCheckEntry.start ? new Date(myStart) : new Date(crossCheckEntry.start); // maximum
+            const overlapEnd = myEnd > crossCheckEntry.end ? new Date(crossCheckEntry.end) : new Date(myEnd); // minimum
 
+            [overlapStart, overlapEnd].forEach((day) => {
+              overlap = true;
+              const overlappingDay = getDayAbbrev(day.getUTCDay());
 
-            // either starting or crosscheck starting day can be on exclusion list
-            let overlappingDay = getDayAbbrev(startDate.getUTCDay());
+              if (Object.keys(daysArray).includes(overlappingDay)) {
+                if (daysArray[overlappingDay].start && daysArray[overlappingDay].end) {
+                  const exclusionStartTime = daysArray[overlappingDay].start.split(':');
+                  const exclusionEndTime = daysArray[overlappingDay].end.split(':');
+                  const exclusionStartDate = new Date(day);
+                  exclusionStartDate.setUTCHours(exclusionStartTime[0]);
+                  exclusionStartDate.setUTCMinutes(exclusionStartTime[1]);
+                  const exclusionEndDate = new Date(day);
+                  exclusionEndDate.setUTCHours(exclusionEndTime[0]);
+                  exclusionEndDate.setUTCMinutes(exclusionEndTime[1]);
 
-            if (!Object.keys(daysArray).includes(overlappingDay)) {
-              overlappingDay = getDayAbbrev(crossCheckDate.getUTCDay());
-            }
-            if (!Object.keys(daysArray).includes(overlappingDay)) {
-              overlappingDay = null;
-            }
-
-            if (overlappingDay) {
-              if (daysArray[overlappingDay].start && daysArray[overlappingDay].end) {
-                const exclusionStartTime = daysArray[overlappingDay].start.split(':');
-                const exclusionEndTime = daysArray[overlappingDay].end.split(':');
-                const exclusionStartDate = new Date(myStart);
-                exclusionStartDate.setUTCHours(exclusionStartTime[0]);
-                exclusionStartDate.setUTCMinutes(exclusionStartTime[1]);
-                const exclusionEndDate = new Date(myStart);
-                exclusionEndDate.setUTCHours(exclusionEndTime[0]);
-                exclusionEndDate.setUTCMinutes(exclusionEndTime[1]);
-
-
-                if (exclusionStartDate <= startDate && startDate < exclusionEndDate) {
-                  debug('excluded:', message);
+                  if (exclusionStartDate <= day && day <= exclusionEndDate) {
+                    debug('excluded:', message);
+                    overlap = false;
+                  }
+                } else {
                   overlap = false;
                 }
-              } else {
-                overlap = false;
               }
-            }
+            });
           }
 
           if (overlap && !duplicities.myUserName.includes(crossCheckEntry.start)) {
