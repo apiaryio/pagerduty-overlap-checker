@@ -9,13 +9,13 @@ const pdApi = require('./pagerduty-api');
 // Get schedule for ID and 2 weeks
 function getSchedule(id, cb) {
   if (nconf.get('WEEKS_TO_CHECK') > 0) {
-    const timeUntil = moment.utc().utc().add(nconf.get('WEEKS_TO_CHECK'), 'w');
+    const timeUntil = moment.utc().add(nconf.get('WEEKS_TO_CHECK'), 'w');
 
     const scheduleOpts = {
       qs: {
         'schedule_ids[]': id,
         until: timeUntil.toISOString(),
-        since: moment.utc().utc().toISOString(),
+        since: moment.utc().toISOString(),
       },
     };
 
