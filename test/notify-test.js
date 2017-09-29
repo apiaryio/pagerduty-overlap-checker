@@ -1,4 +1,5 @@
 const { assert } = require('chai');
+const moment = require('moment');
 const nock = require('nock');
 const nconf = require('nconf');
 
@@ -14,7 +15,7 @@ describe('Test send message using notify.send for both', () => {
   let actual = null;
 
   before((done) => {
-    const overlapDate = new Date();
+    const overlapDate = moment.utc();
     let message = {
       user: 'Test user',
       userId: '1234',
@@ -24,7 +25,7 @@ describe('Test send message using notify.send for both', () => {
     };
 
     const expectBody = {
-      text: `Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (the first starting on ${overlapDate.toUTCString()}, the second on ${overlapDate.toUTCString()})\n`,
+      text: `Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (the first starting on ${notify.toUTCString(overlapDate)}, the second on ${notify.toUTCString(overlapDate)})\n`,
       channel: '#channel-name',
     };
 
