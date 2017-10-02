@@ -149,7 +149,7 @@ function processSchedules(allSchedules, days = [], cb) {
                   exclusionEndDate.hours(exclusionEndTime[0]);
                   exclusionEndDate.minutes(exclusionEndTime[1]);
 
-                  if (day.isBetween(exclusionStartDate, exclusionEndDate)) {
+                  if (day.isBetween(exclusionStartDate, exclusionEndDate, 'minute', [])) {
                     debug('excluded:', message);
                     overlap = false;
                   }
