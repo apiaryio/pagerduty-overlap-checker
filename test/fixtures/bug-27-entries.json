@@ -1,0 +1,31 @@
+{
+  "total": null,
+  "oncalls": [
+    {
+      "escalation_policy": {
+        "id": "PIYVU5O",
+        "type": "escalation_policy_reference",
+        "summary": "Escalation Policy eaque ipsam porro",
+        "self": "https://api.pagerduty.com/escalation_policies/PIYVU5O",
+        "html_url": "https://apidocs.pagerduty.com/escalation_policies/PIYVU5O"
+      },
+      "escalation_level": 1,
+      "schedule": {
+        "id": "P538IZH",
+        "type": "schedule_reference",
+        "summary": "Schedule a quasi illum",
+        "self": "https://api.pagerduty.com/schedules/P538IZH",
+        "html_url": "https://apidocs.pagerduty.com/schedules/P538IZH"
+      },
+      "user": {
+        "summary": "Gregory",
+        "id": "PRT2T0A",
+        "type": "user_reference",
+        "self": "https://api.pagerduty.com/escalation_policies/PRT2T0",
+        "html_url": "https://apiary.pagerduty.com/escalation_policies/PRT2T0"
+      },
+      "end": "2012-08-18T00:00:00-04:00",
+      "start": "2012-08-17T16:00:00-04:00"
+    }
+  ]
+}

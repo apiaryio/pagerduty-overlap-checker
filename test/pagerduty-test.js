@@ -11,6 +11,7 @@ const configWrongPath = `${__dirname}/fixtures/config-wrong.json`;
 
 const incident = require('./fixtures/incident.json');
 const incident2 = require('./fixtures/incident2.json');
+const incidentBug27 = require('./fixtures/bug-27-incident.json');
 
 nock.disableNetConnect();
 
@@ -241,5 +242,103 @@ describe('Compare schedules with no overlap', () => {
   return it('Check that there are no returned messages', () => {
     assert.isArray(message);
     return assert.isEmpty(message);
+  });
+});
+
+describe('Compare schedules with overlap on a weekend, with one shift starting sooner', () => {
+  let message = null;
+
+  before((done) => {
+    config.setupConfig(configWithDaysPath, (configErr) => {
+      if (configErr) { return done(configErr); }
+      nock('https://api.pagerduty.com/')
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/bug-27-entries.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/bug-27-entries-cross.json`);
+
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
+        if (!res) {
+          return done(new Error('Check failed'));
+        }
+        return pd.processSchedulesFromConfig((err, msg) => {
+          if (err) { return done(err); }
+          message = msg;
+          return done(err);
+        });
+      });
+    });
+  });
+
+  return it('Check that there are no returned messages', () => {
+    assert.isArray(message);
+    return assert.isEmpty(message);
+  });
+});
+
+describe('Compare schedules with overlap on a weekend plus one day', () => {
+  let message = null;
+
+  before(done =>
+    config.setupConfig(configWithDaysPath, (configErr) => {
+      if (configErr) { return done(configErr); }
+      nock('https://api.pagerduty.com/')
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/bug-27-entries-plus-one-day.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/bug-27-entries-plus-one-day.json`);
+
+      nock('https://api.pagerduty.com/')
+        .post('/incidents', incidentBug27)
+        .query(true)
+        .reply(200, 'ok');
+
+      nock('https://incomingUrl/').post('/').reply(200, 'ok');
+
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
+        if (!res) {
+          return done(new Error('Check failed'));
+        }
+        return pd.processSchedulesFromConfig((err, msg) => {
+          if (err) { return done(err); }
+          message = msg;
+          return done(err);
+        });
+      });
+    })
+  );
+
+  it('Check if there is 1 returned message', () => {
+    assert.isArray(message);
+    return assert.lengthOf(message, 1);
+  });
+
+  it('Check if the returned message contains "Primary and Secondary"', () => {
+    message.forEach((singleMessage) => {
+      debug(singleMessage);
+      assert.isObject(singleMessage);
+      assert.include(singleMessage.schedules, 'Primary');
+      assert.include(singleMessage.schedules, 'Secondary');
+    });
   });
 });

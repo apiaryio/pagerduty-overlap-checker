@@ -1,4 +1,5 @@
 const async = require('async');
+const moment = require('moment');
 const nconf = require('nconf');
 const _ = require('underscore');
 const debug = require('debug')('pagerduty-overrides');
@@ -8,15 +9,13 @@ const pdApi = require('./pagerduty-api');
 // Get schedule for ID and 2 weeks
 function getSchedule(id, cb) {
   if (nconf.get('WEEKS_TO_CHECK') > 0) {
-    const week = 7 * 86400 * 1000;
-    const timeNow = new Date();
-    const timeUntil = new Date(timeNow.getTime() + (nconf.get('WEEKS_TO_CHECK') * week));
+    const timeUntil = moment.utc().add(nconf.get('WEEKS_TO_CHECK'), 'w');
 
     const scheduleOpts = {
       qs: {
         'schedule_ids[]': id,
         until: timeUntil.toISOString(),
-        since: timeNow.toISOString(),
+        since: moment.utc().toISOString(),
       },
     };
 
@@ -87,12 +86,6 @@ function sendNotification(options, message, cb) {
   return notify.send(options, message, err => cb(err));
 }
 
-function getDayAbbrev(utcDay) {
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  return days[utcDay];
-}
-
 function processSchedules(allSchedules, days = [], cb) {
   let callback = cb;
   let daysArray = days;
@@ -111,52 +104,60 @@ function processSchedules(allSchedules, days = [], cb) {
     debug('otherSchedules:', JSON.stringify(otherSchedules));
     schedule.entries.forEach((entry) => {
       debug('checking entry: ', JSON.stringify(entry));
-      const myStart = entry.start;
-      const myEnd = entry.end;
+      const myStart = moment.utc(entry.start);
+      const myEnd = moment.utc(entry.end);
       const myUserId = entry.user.id;
       const myUserName = entry.user.summary;
       if (duplicities.myUserName == null) { duplicities.myUserName = []; }
       otherSchedules.forEach((crossSchedule) => {
         crossSchedule.entries.forEach((crossCheckEntry) => {
           let overlap = false;
-          const startDate = new Date(myStart);
-          const day = getDayAbbrev(startDate.getUTCDay());
 
           const scheduleId = nconf.get(`schedulesNames:${schedule.id}`);
           const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
+          const crossCheckStart = moment.utc(crossCheckEntry.start);
+          const crossCheckEnd = moment.utc(crossCheckEntry.end);
+          let message;
 
-          const message = {
-            user: myUserName,
-            userId: myUserId,
-            schedules: [scheduleId, crossScheduleId],
-            date: startDate,
-            crossDate: new Date(crossCheckEntry.start),
-          };
-
-          if ((myStart <= crossCheckEntry.start && crossCheckEntry.start < myEnd) &&
+          // is there an overlap?
+          if ((crossCheckStart < myEnd && myStart < crossCheckEnd) &&
               (crossCheckEntry.user.id === myUserId)) {
-            overlap = true;
+            // find overlapping inteval
+            const overlapStart = moment.max(myStart, crossCheckStart);
+            const overlapEnd = moment.min(crossCheckEnd, myEnd);
 
-            if (Object.keys(daysArray).includes(day)) {
-              if (daysArray[day].start && daysArray[day].end) {
-                const exclusionStartTime = daysArray[day].start.split(':');
-                const exclusionEndTime = daysArray[day].end.split(':');
-                const exclusionStartDate = new Date(myStart);
-                exclusionStartDate.setUTCHours(exclusionStartTime[0]);
-                exclusionStartDate.setUTCMinutes(exclusionStartTime[1]);
-                const exclusionEndDate = new Date(myStart);
-                exclusionEndDate.setUTCHours(exclusionEndTime[0]);
-                exclusionEndDate.setUTCMinutes(exclusionEndTime[1]);
+            message = {
+              user: myUserName,
+              userId: myUserId,
+              schedules: [scheduleId, crossScheduleId],
+              overlapStart,
+              overlapEnd,
+            };
 
+            [overlapStart, overlapEnd].forEach((day) => {
+              overlap = true;
+              const overlappingDay = day.format('ddd');
 
-                if (exclusionStartDate <= startDate && startDate < exclusionEndDate) {
-                  debug('excluded:', message);
+              if (Object.keys(daysArray).includes(overlappingDay)) {
+                if (daysArray[overlappingDay].start && daysArray[overlappingDay].end) {
+                  const exclusionStartTime = daysArray[overlappingDay].start.split(':');
+                  const exclusionEndTime = daysArray[overlappingDay].end.split(':');
+                  const exclusionStartDate = moment.utc(day);
+                  exclusionStartDate.hours(exclusionStartTime[0]);
+                  exclusionStartDate.minutes(exclusionStartTime[1]);
+                  const exclusionEndDate = moment.utc(day);
+                  exclusionEndDate.hours(exclusionEndTime[0]);
+                  exclusionEndDate.minutes(exclusionEndTime[1]);
+
+                  if (day.isBetween(exclusionStartDate, exclusionEndDate)) {
+                    debug('excluded:', message);
+                    overlap = false;
+                  }
+                } else {
                   overlap = false;
                 }
-              } else {
-                overlap = false;
               }
-            }
+            });
           }
 
           if (overlap && !duplicities.myUserName.includes(crossCheckEntry.start)) {
