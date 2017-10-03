@@ -108,7 +108,7 @@ function processSchedules(allSchedules, days = [], cb) {
       const myEnd = moment.utc(entry.end);
       const myUserId = entry.user.id;
       const myUserName = entry.user.summary;
-      if (duplicities.myUserName == null) { duplicities.myUserName = []; }
+      if (duplicities[myUserName] == null) { duplicities[myUserName] = []; }
       otherSchedules.forEach((crossSchedule) => {
         crossSchedule.entries.forEach((crossCheckEntry) => {
           let overlap = false;
@@ -118,13 +118,15 @@ function processSchedules(allSchedules, days = [], cb) {
           const crossCheckStart = moment.utc(crossCheckEntry.start);
           const crossCheckEnd = moment.utc(crossCheckEntry.end);
           let message;
+          let overlapStart;
+          let overlapEnd;
 
           // is there an overlap?
           if ((crossCheckStart < myEnd && myStart < crossCheckEnd) &&
               (crossCheckEntry.user.id === myUserId)) {
             // find overlapping inteval
-            const overlapStart = moment.max(myStart, crossCheckStart);
-            const overlapEnd = moment.min(crossCheckEnd, myEnd);
+            overlapStart = moment.max(myStart, crossCheckStart);
+            overlapEnd = moment.min(crossCheckEnd, myEnd);
 
             message = {
               user: myUserName,
@@ -160,8 +162,8 @@ function processSchedules(allSchedules, days = [], cb) {
             });
           }
 
-          if (overlap && !duplicities.myUserName.includes(crossCheckEntry.start)) {
-            duplicities.myUserName.push(crossCheckEntry.start);
+          if (overlap && !duplicities[myUserName].includes(overlapStart.toISOString())) {
+            duplicities[myUserName].push(overlapStart.toISOString());
             messages.push(message);
           }
         });
