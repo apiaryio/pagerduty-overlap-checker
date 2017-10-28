@@ -1,5 +1,5 @@
 const async = require('async');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const nconf = require('nconf');
 const _ = require('underscore');
 const debug = require('debug')('pagerduty-overrides');
@@ -9,13 +9,13 @@ const pdApi = require('./pagerduty-api');
 // Get schedule for ID and 2 weeks
 function getSchedule(id, cb) {
   if (nconf.get('WEEKS_TO_CHECK') > 0) {
-    const timeUntil = moment.utc().add(nconf.get('WEEKS_TO_CHECK'), 'w');
+    const timeUntil = moment().tz('CET').add(nconf.get('WEEKS_TO_CHECK'), 'w');
 
     const scheduleOpts = {
       qs: {
         'schedule_ids[]': id,
         until: timeUntil.toISOString(),
-        since: moment.utc().toISOString(),
+        since: moment().tz('CET').toISOString(),
       },
     };
 
@@ -104,8 +104,8 @@ function processSchedules(allSchedules, days = [], cb) {
     debug('otherSchedules:', JSON.stringify(otherSchedules));
     schedule.entries.forEach((entry) => {
       debug('checking entry: ', JSON.stringify(entry));
-      const myStart = moment.utc(entry.start);
-      const myEnd = moment.utc(entry.end);
+      const myStart = moment.tz(entry.start, 'CET');
+      const myEnd = moment.tz(entry.end, 'CET');
       const myUserId = entry.user.id;
       const myUserName = entry.user.summary;
       if (duplicities[myUserName] == null) { duplicities[myUserName] = []; }
@@ -115,8 +115,8 @@ function processSchedules(allSchedules, days = [], cb) {
 
           const scheduleId = nconf.get(`schedulesNames:${schedule.id}`);
           const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
-          const crossCheckStart = moment.utc(crossCheckEntry.start);
-          const crossCheckEnd = moment.utc(crossCheckEntry.end);
+          const crossCheckStart = moment.tz(crossCheckEntry.start, 'CET');
+          const crossCheckEnd = moment.tz(crossCheckEntry.end, 'CET');
           let message;
           let overlapStart;
           let overlapEnd;
@@ -144,10 +144,10 @@ function processSchedules(allSchedules, days = [], cb) {
                 if (daysArray[overlappingDay].start && daysArray[overlappingDay].end) {
                   const exclusionStartTime = daysArray[overlappingDay].start.split(':');
                   const exclusionEndTime = daysArray[overlappingDay].end.split(':');
-                  const exclusionStartDate = moment.utc(day);
+                  const exclusionStartDate = moment(day);
                   exclusionStartDate.hours(exclusionStartTime[0]);
                   exclusionStartDate.minutes(exclusionStartTime[1]);
-                  const exclusionEndDate = moment.utc(day);
+                  const exclusionEndDate = moment(day);
                   exclusionEndDate.hours(exclusionEndTime[0]);
                   exclusionEndDate.minutes(exclusionEndTime[1]);
 

@@ -30,7 +30,7 @@ function send(endpointPath, overrideOptions, cb) {
 
   if (!defaultOptions.qs) { defaultOptions.qs = []; }
   defaultOptions.qs.limit = 100;
-  defaultOptions.qs.timezone = 'UTC';
+  defaultOptions.qs.timezone = 'CET';
 
   debug('Calling request with: ', defaultOptions);
   return request(defaultOptions, callback);

@@ -3,7 +3,7 @@ const async = require('async');
 const debug = require('debug')('pagerduty-overrides:notifications');
 const pdApi = require('./pagerduty-api');
 
-function toUTCString(moment) {
+function toISOstring(moment) {
   return moment.format('ddd, D MMM YYYY HH:mm:ss z');
 }
 
@@ -95,13 +95,13 @@ function formatMessage(messages, option = 'plain') {
     case 'plain':
       outputMessage = '_Following overlaps found:_\n';
       messages.forEach((message) => {
-        outputMessage += `${message.user}: ${message.schedules[0]} and ${message.schedules[1]} (from ${toUTCString(message.overlapStart)} to ${toUTCString(message.overlapEnd)})\n`;
+        outputMessage += `${message.user}: ${message.schedules[0]} and ${message.schedules[1]} (from ${toISOstring(message.overlapStart)} to ${toISOstring(message.overlapEnd)})\n`;
       });
       break;
     case 'markdown':
       outputMessage = 'Following overlaps found:\n';
       messages.forEach((message) => {
-        outputMessage += `*${message.user}:* \`${message.schedules[0]}\` and \`${message.schedules[1]}\` (from ${toUTCString(message.overlapStart)} to ${toUTCString(message.overlapEnd)})\n`;
+        outputMessage += `*${message.user}:* \`${message.schedules[0]}\` and \`${message.schedules[1]}\` (from ${toISOstring(message.overlapStart)} to ${toISOstring(message.overlapEnd)})\n`;
       });
       break;
     case 'json':
@@ -110,7 +110,7 @@ function formatMessage(messages, option = 'plain') {
         if (acc[curr.userId].userId == null) { acc[curr.userId].userId = curr.userId; }
         if (acc[curr.userId].user == null) { acc[curr.userId].user = curr.user; }
         if (acc[curr.userId].messages == null) { acc[curr.userId].messages = []; }
-        acc[curr.userId].messages.push(`${curr.schedules[0]} and ${curr.schedules[1]} (from ${toUTCString(curr.overlapStart)} to ${toUTCString(curr.overlapEnd)})`);
+        acc[curr.userId].messages.push(`${curr.schedules[0]} and ${curr.schedules[1]} (from ${toISOstring(curr.overlapStart)} to ${toISOstring(curr.overlapEnd)})`);
         return acc;
       }
         , {});
@@ -172,5 +172,5 @@ function send(options, message, cb) {
 
 module.exports = {
   send,
-  toUTCString,
+  toISOstring,
 };

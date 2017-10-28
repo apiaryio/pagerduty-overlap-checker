@@ -8,7 +8,7 @@
     },
     "body": {
       "type": "incident_body",
-      "details": "Primary and Secondary (from Fri, 17 Aug 2012 20:00:00 UTC to Tue, 21 Aug 2012 04:00:00 UTC)"
+      "details": "Primary and Secondary (from Fri, 17 Aug 2012 22:00:00 CEST to Tue, 21 Aug 2012 06:00:00 CEST)"
     },
     "assignments": [
       {

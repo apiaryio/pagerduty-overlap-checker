@@ -15,7 +15,7 @@
 - `PAGERDUTY_READ_ONLY_TOKEN` is used for reading schedules and checking the overlaps.
 - `SCHEDULES` array can contain one or more `SCHEDULE` items to check
 - every `SCHEDULE` should have a `NOTIFICATIONS` section to create a PagerDuty incident or send a Slack message if overlap is found
-- `SCHEDULE` can contain a `EXCLUSION_DAYS` key, which specifies days (3 letter abb.) in form of object with optional `start` and `end` time (`hh:mm` format **UTC TIMEZONE**).If `start` or `end` is omitted, whole day is considered excluded. 
+- `SCHEDULE` can contain a `EXCLUSION_DAYS` key, which specifies days (3 letter abb.) in form of object with optional `start` and `end` time (`hh:mm` format **CET TIMEZONE**).If `start` or `end` is omitted, whole day is considered excluded.
 Example below represents current weekend on-call setup.
 
 Currently, we support Slack (`SLACK` with `SLACK_WEBHOOK_URL` and `CHANNEL`) or shorthanded `SLACK_WEBHOOK_URL` and 
@@ -51,7 +51,7 @@ When generating an API token, select the v2 option.
           },
           "SLACK_WEBHOOK_URL": "http://acme.slack.com/11111"
         },
-        "EXCLUSION_DAYS": {"Fri": {"start": "16:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "16:00"}}
+        "EXCLUSION_DAYS": {"Fri": {"start": "18:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "18:00"}}
     }]
 }
 ```
