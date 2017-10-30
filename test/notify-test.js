@@ -15,7 +15,7 @@ describe('Test send message using notify.send for both', () => {
   let actual = null;
 
   before((done) => {
-    const overlapDate = moment.utc();
+    const overlapDate = moment().tz('CET');
     let message = {
       user: 'Test user',
       userId: '1234',
@@ -25,7 +25,7 @@ describe('Test send message using notify.send for both', () => {
     };
 
     const expectBody = {
-      text: `Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (from ${notify.toUTCString(overlapDate)} to ${notify.toUTCString(overlapDate)})\n`,
+      text: `Following overlaps found:\n*Test user:* \`TEST1\` and \`TEST2\` (from ${notify.toISOstring(overlapDate)} to ${notify.toISOstring(overlapDate)})\n`,
       channel: '#channel-name',
     };
 
