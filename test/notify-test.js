@@ -59,5 +59,5 @@ describe('Test send message using notify.send for both', () => {
     });
   });
 
-  return it('Check result from send notification', () => assert.equal('ok', actual));
+  return it('Check result from send notification', () => assert.equal('failed', actual));
 });

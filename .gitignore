@@ -8,3 +8,4 @@ config.json
 /lcov
 cov.info
 cov.html
+.wercker/
