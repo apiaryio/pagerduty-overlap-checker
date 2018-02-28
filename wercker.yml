@@ -2,7 +2,6 @@ box: node:6
 build:
   steps:
     - npm-install
-    - npm-test
 
 test:
   steps:
