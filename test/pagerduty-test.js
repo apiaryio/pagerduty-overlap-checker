@@ -342,3 +342,34 @@ describe('Compare schedules with overlap on a weekend plus one day', () => {
     });
   });
 });
+
+describe("Subtract excluded ranges", () => {
+  const moment = config.moment;
+  const excludedRanges = [
+    moment.range([moment.tz("2012-08-10T15:00:00.000Z", "CET"),moment.tz("2012-08-10T21:59:59.999Z", "CET")]),
+    moment.range([moment.tz("2012-08-17T15:00:00.000Z", "CET"),moment.tz("2012-08-17T21:59:59.999Z", "CET")]),
+    moment.range([moment.tz("2012-08-10T22:00:00.000Z", "CET"),moment.tz("2012-08-11T21:59:59.999Z", "CET")]),
+    moment.range([moment.tz("2012-08-17T22:00:00.000Z", "CET"),moment.tz("2012-08-18T21:59:59.999Z", "CET")]),
+    moment.range([moment.tz("2012-08-04T22:00:00.000Z", "CET"),moment.tz("2012-08-05T15:00:00.000Z", "CET")]),
+    moment.range([moment.tz("2012-08-11T22:00:00.000Z", "CET"),moment.tz("2012-08-12T15:00:00.000Z", "CET")]),
+    moment.range([moment.tz("2012-08-18T22:00:00.000Z", "CET"),moment.tz("2012-08-19T15:00:00.000Z", "CET")])
+  ]
+  
+  const overlapRange = moment.range([moment.tz("2012-08-19T16:00:00.000Z", "CET"),moment.tz("2012-08-20T04:00:00.000Z", "CET")]);
+  
+  let result = [];
+
+  before((done) => {
+    config.setupConfig(configWithDaysPath, (configErr) => {
+      if (configErr) { return done(configErr); }
+      result = pd.subtract(overlapRange, excludedRanges);
+      done();
+    });
+  });
+
+  it("Check there is some range left", () => {
+    assert.isArray(result);
+    const expectedResult = [{"start":"2012-08-19T16:00:00.000Z","end":"2012-08-20T04:00:00.000Z"}]
+    assert.equal(JSON.stringify(result), JSON.stringify(expectedResult));
+  });
+});
