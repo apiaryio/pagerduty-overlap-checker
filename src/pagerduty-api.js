@@ -1,5 +1,5 @@
-const _ = require('underscore');
-const debug = require('debug')('pagerduty-overrides');
+const _ = require('lodash');
+const debug = require('debug')('pagerduty-overrides:pagerduty-api');
 const request = require('request');
 const nconf = require('nconf');
 const url = require('url');
