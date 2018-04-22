@@ -1,24 +1,24 @@
-const async = require("async");
-const moment = require("./config").moment;
+const async = require('async');
+const moment = require('./config').moment;
 
-const nconf = require("nconf");
-const _ = require("lodash");
-const debug = require("debug")("pagerduty-overrides:pagerduty");
-const notify = require("./notify");
-const pdApi = require("./pagerduty-api");
+const nconf = require('nconf');
+const _ = require('lodash');
+const debug = require('debug')('pagerduty-overrides:pagerduty');
+const notify = require('./notify');
+const pdApi = require('./pagerduty-api');
 
 // Get schedule for ID and 2 weeks
 function getSchedule(id, cb) {
-  const timezone = nconf.get("TIMEZONE");
-  const timeUntil = moment.tz(nconf.get("TIME_UNTIL"), timezone);
-  const timeSince = moment.tz(nconf.get("TIME_SINCE"), timezone);
-  
+  const timezone = nconf.get('TIMEZONE');
+  const timeUntil = moment.tz(nconf.get('TIME_UNTIL'), timezone);
+  const timeSince = moment.tz(nconf.get('TIME_SINCE'), timezone);
+
   const scheduleOpts = {
     qs: {
       'schedule_ids[]': id,
       until: timeUntil.toISOString(),
-      since: timeSince.toISOString()
-    }
+      since: timeSince.toISOString(),
+    },
   };
 
 
@@ -87,71 +87,74 @@ function sendNotification(options, message, cb) {
 }
 
 function subtract(originalRange, rangesToSubtract) {
+  let originalRangeArray;
   if (!Array.isArray(originalRange)) {
-    originalRange = [originalRange]
+    originalRangeArray = [originalRange];
+  } else {
+    originalRangeArray = originalRange;
   }
 
-  return _.flatten(originalRange.map(orig => {
-      let remaining = [orig];
-      _.flatten(rangesToSubtract).forEach(s => {
-        debug(`Processing: ${s}`);
-        remaining = _.compact(remaining.map(r => {
-          debug(`Subtracting ${s} from ${r}`);
-          let result = [];
-          _.flatten(r.subtract(s)).forEach(newRange => {
-            //avoid ms-long durations
-            if (newRange && (newRange.duration() > 1 || newRange.duration() < -1)) {
-              debug(`Returning ${newRange}`);
-              result.push(newRange);
-            }
-          });
-          return result;
-        }));
-        remaining = _.flatten(remaining);
-      });
-      return _.compact(remaining);
-    })
+  return _.flatten(originalRangeArray.map((orig) => {
+    let remaining = [orig];
+    _.flatten(rangesToSubtract).forEach((s) => {
+      debug(`Processing: ${s}`);
+      remaining = _.compact(remaining.map((r) => {
+        debug(`Subtracting ${s} from ${r}`);
+        const result = [];
+        _.flatten(r.subtract(s)).forEach((newRange) => {
+          // avoid ms-long durations
+          if (newRange && (newRange.duration() > 1 || newRange.duration() < -1)) {
+            debug(`Returning ${newRange}`);
+            result.push(newRange);
+          }
+        });
+        return result;
+      }));
+      remaining = _.flatten(remaining);
+    });
+    return _.compact(remaining);
+  })
   );
 }
 
-function getExcludeRanges(excludeDaysArray, timeSince, timeUntil, timezone){
-  if (!Array.isArray(excludeDaysArray)){
-    let result = [];
-    Object.keys(excludeDaysArray).forEach(key => {
-      let exclDay = { day: key};
-      if (excludeDaysArray[key].start) exclDay.start = excludeDaysArray[key].start;
-      if (excludeDaysArray[key].end) exclDay.end = excludeDaysArray[key].end;
-      result.push(exclDay);
+function getExcludeRanges(excludeDays, timeSince, timeUntil, timezone) {
+  let excludeDaysArray = [];
+  if (!Array.isArray(excludeDays)) {
+    Object.keys(excludeDays).forEach((key) => {
+      const exclDay = { day: key };
+      if (excludeDays[key].start) exclDay.start = excludeDays[key].start;
+      if (excludeDays[key].end) exclDay.end = excludeDays[key].end;
+      excludeDaysArray.push(exclDay);
     });
-    excludeDaysArray = result;
+  } else {
+    excludeDaysArray = excludeDays;
   }
 
-  debug("Exclude days array: ", JSON.stringify(excludeDaysArray));
+  debug('Exclude days array: ', JSON.stringify(excludeDaysArray));
 
-  let excludeRanges = [];
-  let checkRange = moment.range(timeSince, timeUntil);
+  const excludeRanges = [];
+  const checkRange = moment.range(timeSince, timeUntil);
   debug('Checking range:', JSON.stringify(checkRange));
-  excludeDaysArray.forEach(item => {
+  excludeDaysArray.forEach((item) => {
     // generate all ranges based on the check interval, then compare them with found overlaps
-    let daysToAdd = [];
+    const daysToAdd = [];
     let tmp = moment.tz(timeSince, timezone).day(item.day).startOf('day');
     while (tmp.isBefore(timeUntil)) {
       daysToAdd.push(tmp);
       tmp = moment
         .tz(tmp, timezone)
-        .add(1, "week");
+        .add(1, 'week');
     }
-    debug("Days to add: ", JSON.stringify(daysToAdd));
-    daysToAdd.forEach(dayToAdd => {
-      let excludeRange;
-      let start = moment.tz(dayToAdd, timezone).startOf('day');
+    debug('Days to add: ', JSON.stringify(daysToAdd));
+    daysToAdd.forEach((dayToAdd) => {
+      const start = moment.tz(dayToAdd, timezone).startOf('day');
       let end = moment.tz(dayToAdd, timezone).startOf('day');
       if (item.start) {
-        let startTime = item.start.split(":");
+        const startTime = item.start.split(':');
         start.add({ hours: startTime[0], minutes: startTime[1] });
       }
       if (item.end) {
-        let endTime = item.end.split(":");
+        const endTime = item.end.split(':');
         end.add({ hours: endTime[0], minutes: endTime[1] });
       } else {
         end = end.endOf('day');
@@ -160,7 +163,7 @@ function getExcludeRanges(excludeDaysArray, timeSince, timeUntil, timezone){
     });
   });
 
-  debug("Exclude ranges: ", JSON.stringify(excludeRanges));
+  debug('Exclude ranges: ', JSON.stringify(excludeRanges));
   return excludeRanges;
 }
 
@@ -168,16 +171,16 @@ function processSchedules(allSchedules, excludeDays = [], cb) {
   let callback = cb;
   let excludeDaysArray = excludeDays;
 
-  if (typeof excludeDaysArray === "function") {
+  if (typeof excludeDaysArray === 'function') {
     callback = excludeDaysArray;
     excludeDaysArray = [];
   }
 
-  const timezone = nconf.get("TIMEZONE");
-  const timeUntil = moment.tz(nconf.get("TIME_UNTIL"), timezone);
-  const timeSince = moment.tz(nconf.get("TIME_SINCE"), timezone);
+  const timezone = nconf.get('TIMEZONE');
+  const timeUntil = moment.tz(nconf.get('TIME_UNTIL'), timezone);
+  const timeSince = moment.tz(nconf.get('TIME_SINCE'), timezone);
 
-  let excludeRanges = getExcludeRanges(excludeDaysArray, timeSince, timeUntil, timezone);
+  const excludeRanges = getExcludeRanges(excludeDaysArray, timeSince, timeUntil, timezone);
 
   const messages = [];
   const duplicities = {};
@@ -188,31 +191,37 @@ function processSchedules(allSchedules, excludeDays = [], cb) {
     debug('otherSchedules:', JSON.stringify(otherSchedules));
     schedule.entries.forEach((entry) => {
       debug('checking entry: ', JSON.stringify(entry));
-      const entryRange = moment.range(moment.tz(entry.start, timezone), moment.tz(entry.end, timezone));
+      const entryRange = moment.range(
+        moment.tz(entry.start, timezone),
+        moment.tz(entry.end, timezone)
+      );
       const entryUserName = entry.user.summary;
       if (duplicities[entryUserName] == null) duplicities[entryUserName] = [];
-      otherSchedules.forEach(crossSchedule => {
+      otherSchedules.forEach((crossSchedule) => {
         crossSchedule.entries
-          .filter(e => e.user.id == entry.user.id)
-          .forEach(crossCheckEntry => {
+          .filter(e => e.user.id === entry.user.id)
+          .forEach((crossCheckEntry) => {
             const scheduleId = nconf.get(`schedulesNames:${schedule.id}`);
             const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
-            const crossCheckRange = moment.range(moment.tz(crossCheckEntry.start, timezone), moment.tz(crossCheckEntry.end, timezone));
+            const crossCheckRange = moment.range(
+              moment.tz(crossCheckEntry.start, timezone),
+              moment.tz(crossCheckEntry.end, timezone)
+            );
 
             if (crossCheckRange.overlaps(entryRange)) {
-              let overlapRange = crossCheckRange.intersect(entryRange);
+              const overlapRange = crossCheckRange.intersect(entryRange);
               debug('Found overlap range:', JSON.stringify(overlapRange));
               debug('Excluded range:', JSON.stringify(excludeRanges));
-              let remainingOverlapRanges = subtract(overlapRange, excludeRanges);
+              const remainingOverlapRanges = subtract(overlapRange, excludeRanges);
               debug('Overlap ranges after removal:', JSON.stringify(remainingOverlapRanges));
               if (!_.isEmpty(remainingOverlapRanges)) {
-                remainingOverlapRanges.forEach(range => {
-                  let message = {
+                remainingOverlapRanges.forEach((range) => {
+                  const message = {
                     user: entryUserName,
                     userId: entry.user.id,
                     schedules: [scheduleId, crossScheduleId],
                     overlapStart: moment.tz(range.start, timezone),
-                    overlapEnd: moment.tz(range.end, timezone)
+                    overlapEnd: moment.tz(range.end, timezone),
                   };
                   if (!duplicities[entryUserName].includes(range.start.toISOString())) {
                     duplicities[entryUserName].push(range.start.toISOString());
@@ -269,5 +278,5 @@ module.exports = {
   processSchedules,
   processSchedulesFromConfig,
   sendNotification,
-  subtract
+  subtract,
 };

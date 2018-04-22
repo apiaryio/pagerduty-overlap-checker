@@ -3,7 +3,6 @@ const debug = require('debug')('pagerduty-overrides:pagerduty-api');
 const request = require('request');
 const nconf = require('nconf');
 const url = require('url');
-const config = require('./config');
 
 // Factory for sending request to PD API
 function send(endpointPath, overrideOptions, cb) {
