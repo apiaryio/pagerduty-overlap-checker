@@ -6,7 +6,7 @@
 
 - 6.x (LTS)
 
-# Pager Duty Overrides Checker
+# Pager Duty Overlap Checker
 
 ## Usage
 
