@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha",
-    "lint": "conventional-changelog-lint --from=master && eslint ./src",
+    "lint": "conventional-changelog-lint --from=master && ./node_modules/eslint/bin/eslint.js ./src",
     "coverage": "./scripts/cov",
     "coveralls": "npm run coverage && cat ./cov.info | ./node_modules/coveralls/bin/coveralls.js",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
