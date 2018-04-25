@@ -1,5 +1,5 @@
-const _ = require('underscore');
-const debug = require('debug')('pagerduty-overrides');
+const _ = require('lodash');
+const debug = require('debug')('pagerduty-overrides:pagerduty-api');
 const request = require('request');
 const nconf = require('nconf');
 const url = require('url');
@@ -30,7 +30,7 @@ function send(endpointPath, overrideOptions, cb) {
 
   if (!defaultOptions.qs) { defaultOptions.qs = []; }
   defaultOptions.qs.limit = 100;
-  defaultOptions.qs.timezone = 'CET';
+  defaultOptions.qs.timezone = nconf.get('TIMEZONE');
 
   debug('Calling request with: ', defaultOptions);
   return request(defaultOptions, callback);

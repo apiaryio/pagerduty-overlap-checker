@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha",
-    "lint": "conventional-changelog-lint --from=master && eslint ./src",
+    "lint": "conventional-changelog-lint --from=master && ./node_modules/eslint/bin/eslint.js ./src",
     "coverage": "./scripts/cov",
     "coveralls": "npm run coverage && cat ./cov.info | ./node_modules/coveralls/bin/coveralls.js",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
@@ -25,24 +25,25 @@
     "check"
   ],
   "dependencies": {
+    "ajv": "^5.5.2",
     "async": "1.5.2",
     "commander": "2.9.0",
     "debug": "2.6.7",
     "fs-access": "1.0.0",
     "moment": "^2.18.1",
+    "moment-range": "^4.0.0",
     "moment-timezone": "^0.5.13",
     "nconf": "0.8.4",
     "node-slackr": "0.1.3",
-    "request": "2.81.0",
-    "underscore": "1.8.3"
+    "request": "2.81.0"
   },
   "devDependencies": {
     "chai": "",
     "conventional-changelog-lint": "^1.1.9",
     "coveralls": "~2.11.2",
-    "eslint": "^4.6.1",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^15.1.0",
-    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-import": "^2.11.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.3.0",
     "mocha": "",

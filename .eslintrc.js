@@ -15,5 +15,9 @@ module.exports = {
       exports: 'always-multiline',
       functions: 'never', // This is not supported in Node without Babel transform
     }],
-  },
+    'import/no-unresolved': [
+      2, 
+      { caseSensitive: false }
+    ]
+  }
 };

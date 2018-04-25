@@ -1,4 +1,5 @@
 {
+  "TIME_SINCE": "2012-08-10",
   "PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
   "PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
   "WEEKS_TO_CHECK": 2,
@@ -15,6 +16,6 @@
         "PAGERDUTY_FROM": "test@test.com"
       }
     },
-    "EXCLUSION_DAYS": {"Fri": {"start": "16:00", "end": "23:59"}, "Sat": {}, "Sun": {"start": "00:00", "end": "16:00"}}
+    "EXCLUSION_DAYS": {"Fri": {"start": "18:00"}, "Sat": {}, "Sun": {"start": "00:00", "end": "18:00"}}
   }]
 }
