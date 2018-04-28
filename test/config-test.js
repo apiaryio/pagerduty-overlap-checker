@@ -15,5 +15,5 @@ describe('Setup config and get config', () => {
 
   it('NODE_ENV isn\'t set', () => assert.equal(nconf.get('NODE_ENV'), undefined));
 
-  return it('PAGERDUTY_READ_ONLY_TOKEN is set', () => assert.equal(nconf.get('PAGERDUTY_READ_ONLY_TOKEN'), 'E7px6VVr3PVHZPJq51oa'));
+  return it('PAGERDUTY_READ_ONLY_TOKEN is set', () => assert.equal(nconf.get('PAGERDUTY_READ_ONLY_TOKEN'), 'dummy'));
 });

@@ -1,6 +1,6 @@
 {
     "PAGERDUTY_READ_ONLY_TOKEN": "dummy",
-    "TIME_SINCE": "2017-10-20",
+    "TIME_SINCE": "2012-08-04",
 	"WEEKS_TO_CHECK": 2,
 	"SCHEDULES": [{
 		"SCHEDULE": ["PWEVPB6", "PT57OLG"],

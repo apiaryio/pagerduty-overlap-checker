@@ -9,6 +9,7 @@ const configPath = `${__dirname}/fixtures/config.json`;
 const configWithDaysPath = `${__dirname}/fixtures/config-days.json`;
 const configWrongPath = `${__dirname}/fixtures/config-wrong.json`;
 const configDst = `${__dirname}/fixtures/config-dst.json`;
+const configOverTimeUntil = `${__dirname}/fixtures/config-over-time-until.json`;
 
 const incident = require('./fixtures/incident.json');
 const incident2 = require('./fixtures/incident2.json');
@@ -395,6 +396,47 @@ describe('Compare schedules with overlap on a weekend, on a DST switch', () => {
         .get('/oncalls')
         .query(true)
         .replyWithFile(200, `${__dirname}/fixtures/dst-entries-cross.json`);
+
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
+        if (!res) {
+          return done(new Error('Check failed'));
+        }
+        return pd.processSchedulesFromConfig((err, msg) => {
+          if (err) { return done(err); }
+          message = msg;
+          return done(err);
+        });
+      });
+    });
+  });
+
+  return it('Check that there are no returned messages', () => {
+    assert.isArray(message);
+    return assert.isEmpty(message);
+  });
+});
+
+describe('Compare schedules with records past TIME_UNTIL', () => {
+  let message = null;
+
+  before((done) => {
+    config.setupConfig(configOverTimeUntil, (configErr) => {
+      if (configErr) { return done(configErr); }
+      nock('https://api.pagerduty.com/')
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/entries-over-time-until.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/entries-cross-over-time-until.json`);
 
       return pd.checkSchedulesIds((checkErr, res) => {
         if (checkErr) { return done(checkErr); }
