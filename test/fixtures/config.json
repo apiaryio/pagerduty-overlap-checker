@@ -1,5 +1,5 @@
 {
-	"PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
+	"PAGERDUTY_READ_ONLY_TOKEN": "dummy",
 	"WEEKS_TO_CHECK": 2,
 	"SCHEDULES": [{
 		"SCHEDULE": ["PWEVPB6", "PT57OLG"],
@@ -9,7 +9,7 @@
 				"CHANNEL": "#channel-name"
 			},
 			"PAGERDUTY": {
-				"PAGERDUTY_TOKEN": "111111111111",
+				"PAGERDUTY_TOKEN": "dummy",
 				"PAGERDUTY_SERVICE_ID": "PFARE53",
 				"PAGERDUTY_FROM": "test@test.com"
 			}

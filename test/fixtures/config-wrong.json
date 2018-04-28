@@ -1,15 +1,15 @@
 {
 	"PAGERDUTY_API_URL": "https://acme.pagerduty.com/api/v1",
-	"PAGERDUTY_READ_ONLY_TOKEN": "E7px6VVr3PVHZPJq51oa",
+	"PAGERDUTY_READ_ONLY_TOKEN": "dummy",
 	"SCHEDULES": [{
 		"SCHEDULE": ["PWEVPB6", "PT57OLG"],
 		"NOTIFICATIONS": {
-			"PAGERDUTY_TOKEN": "E7px6VVr3PVHZPJq51oa"
+			"PAGERDUTY_TOKEN": "dummy"
 		}
 	},{
 		"SCHEDULE": ["PWEVPB1", "PT57OL1"],
 		"NOTIFICATIONS": {
-			"PAGERDUTY_TOKEN": "E7px6VVr3PVHZPJq51oa"
+			"PAGERDUTY_TOKEN": "dummy"
 		}
 	}
 	]
