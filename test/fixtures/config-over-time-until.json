@@ -1,0 +1,20 @@
+{
+    "PAGERDUTY_READ_ONLY_TOKEN": "dummy",
+    "TIME_SINCE": "2012-08-04",
+	"WEEKS_TO_CHECK": 2,
+	"SCHEDULES": [{
+		"SCHEDULE": ["PWEVPB6", "PT57OLG"],
+		"NOTIFICATIONS": {
+			"SLACK": {
+				"SLACK_WEBHOOK_URL": "https://incomingUrl/",
+				"CHANNEL": "#channel-name"
+			},
+			"PAGERDUTY": {
+				"PAGERDUTY_TOKEN": "dummy",
+				"PAGERDUTY_SERVICE_ID": "PFARE53",
+				"PAGERDUTY_FROM": "test@test.com"
+			}
+		},
+		"EXCLUSION_DAYS": {"Fri": {"start": "18:00"}, "Sat": {}, "Sun": {"end": "18:00"}}
+	}]
+}

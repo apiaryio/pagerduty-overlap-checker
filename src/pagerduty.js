@@ -193,7 +193,7 @@ function processSchedules(allSchedules, excludeDays = [], cb) {
       debug('checking entry: ', JSON.stringify(entry));
       const entryRange = moment.range(
         moment.tz(entry.start, timezone),
-        moment.tz(entry.end, timezone)
+        moment.tz(moment.min(entry.end, timeUntil), timezone)
       );
       const entryUserName = entry.user.summary;
       if (duplicities[entryUserName] == null) duplicities[entryUserName] = [];
@@ -205,7 +205,7 @@ function processSchedules(allSchedules, excludeDays = [], cb) {
             const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
             const crossCheckRange = moment.range(
               moment.tz(crossCheckEntry.start, timezone),
-              moment.tz(crossCheckEntry.end, timezone)
+              moment.tz(moment.min(crossCheckEntry.end, timeUntil), timezone)
             );
 
             if (crossCheckRange.overlaps(entryRange)) {
