@@ -192,7 +192,7 @@ function processSchedules(allSchedules, excludeDays = [], cb) {
     schedule.entries.forEach((entry) => {
       debug('checking entry: ', JSON.stringify(entry));
       const entryRange = moment.range(
-        moment.tz(entry.start, timezone),
+        moment.tz(moment.max(entry.start, timeSince), timezone),
         moment.tz(moment.min(entry.end, timeUntil), timezone)
       );
       const entryUserName = entry.user.summary;
@@ -204,7 +204,7 @@ function processSchedules(allSchedules, excludeDays = [], cb) {
             const scheduleId = nconf.get(`schedulesNames:${schedule.id}`);
             const crossScheduleId = nconf.get(`schedulesNames:${crossSchedule.id}`);
             const crossCheckRange = moment.range(
-              moment.tz(crossCheckEntry.start, timezone),
+              moment.tz(moment.max(crossCheckEntry.start, timeSince), timezone),
               moment.tz(moment.min(crossCheckEntry.end, timeUntil), timezone)
             );
 
