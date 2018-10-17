@@ -147,15 +147,19 @@ function getExcludeRanges(excludeDays, timeSince, timeUntil, timezone) {
     }
     debug('Days to add: ', JSON.stringify(daysToAdd));
     daysToAdd.forEach((dayToAdd) => {
-      const start = moment.tz(dayToAdd, timezone).startOf('day');
+      let start = moment.tz(dayToAdd, timezone).startOf('day');
       let end = moment.tz(dayToAdd, timezone).startOf('day');
       if (item.start) {
         const startTime = item.start.split(':');
-        start.add({ hours: startTime[0], minutes: startTime[1] });
+        // we can't call moment.add({hours:number}) as this
+        // would produce an off value for the DST switch day
+        start = moment.tz(`${start.format('YYYY-MM-DD')} ${startTime[0]}:${startTime[1]}`, timezone);
       }
       if (item.end) {
         const endTime = item.end.split(':');
-        end.add({ hours: endTime[0], minutes: endTime[1] });
+        // we can't call moment.add({hours:number}) as this
+        // would produce an off value for the DST switch day
+        end = moment.tz(`${end.format('YYYY-MM-DD')} ${endTime[0]}:${endTime[1]}`, timezone);
       } else {
         end = end.endOf('day');
       }

@@ -9,6 +9,7 @@ const configPath = `${__dirname}/fixtures/config.json`;
 const configWithDaysPath = `${__dirname}/fixtures/config-days.json`;
 const configWrongPath = `${__dirname}/fixtures/config-wrong.json`;
 const configDst = `${__dirname}/fixtures/config-dst.json`;
+const configDst2 = `${__dirname}/fixtures/config-dst-2.json`;
 const configOverTimeUntil = `${__dirname}/fixtures/config-over-time-until.json`;
 const configBeforeTimeSince = `${__dirname}/fixtures/config-before-time-since.json`;
 
@@ -346,33 +347,33 @@ describe('Compare schedules with overlap on a weekend plus one day', () => {
   });
 });
 
-describe("Subtract excluded ranges", () => {
+describe('Subtract excluded ranges', () => {
   const moment = config.moment;
   const excludedRanges = [
-    moment.range([moment.tz("2012-08-10T15:00:00.000Z", "CET"),moment.tz("2012-08-10T21:59:59.999Z", "CET")]),
-    moment.range([moment.tz("2012-08-17T15:00:00.000Z", "CET"),moment.tz("2012-08-17T21:59:59.999Z", "CET")]),
-    moment.range([moment.tz("2012-08-10T22:00:00.000Z", "CET"),moment.tz("2012-08-11T21:59:59.999Z", "CET")]),
-    moment.range([moment.tz("2012-08-17T22:00:00.000Z", "CET"),moment.tz("2012-08-18T21:59:59.999Z", "CET")]),
-    moment.range([moment.tz("2012-08-04T22:00:00.000Z", "CET"),moment.tz("2012-08-05T15:00:00.000Z", "CET")]),
-    moment.range([moment.tz("2012-08-11T22:00:00.000Z", "CET"),moment.tz("2012-08-12T15:00:00.000Z", "CET")]),
-    moment.range([moment.tz("2012-08-18T22:00:00.000Z", "CET"),moment.tz("2012-08-19T15:00:00.000Z", "CET")])
-  ]
-  
-  const overlapRange = moment.range([moment.tz("2012-08-19T16:00:00.000Z", "CET"),moment.tz("2012-08-20T04:00:00.000Z", "CET")]);
-  
+    moment.range([moment.tz('2012-08-10T15:00:00.000Z', 'CET'), moment.tz('2012-08-10T21:59:59.999Z', 'CET')]),
+    moment.range([moment.tz('2012-08-17T15:00:00.000Z', 'CET'), moment.tz('2012-08-17T21:59:59.999Z', 'CET')]),
+    moment.range([moment.tz('2012-08-10T22:00:00.000Z', 'CET'), moment.tz('2012-08-11T21:59:59.999Z', 'CET')]),
+    moment.range([moment.tz('2012-08-17T22:00:00.000Z', 'CET'), moment.tz('2012-08-18T21:59:59.999Z', 'CET')]),
+    moment.range([moment.tz('2012-08-04T22:00:00.000Z', 'CET'), moment.tz('2012-08-05T15:00:00.000Z', 'CET')]),
+    moment.range([moment.tz('2012-08-11T22:00:00.000Z', 'CET'), moment.tz('2012-08-12T15:00:00.000Z', 'CET')]),
+    moment.range([moment.tz('2012-08-18T22:00:00.000Z', 'CET'), moment.tz('2012-08-19T15:00:00.000Z', 'CET')]),
+  ];
+
+  const overlapRange = moment.range([moment.tz('2012-08-19T16:00:00.000Z', 'CET'), moment.tz('2012-08-20T04:00:00.000Z', 'CET')]);
+
   let result = [];
 
   before((done) => {
     config.setupConfig(configWithDaysPath, (configErr) => {
       if (configErr) { return done(configErr); }
       result = pd.subtract(overlapRange, excludedRanges);
-      done();
+      return done();
     });
   });
 
-  it("Check there is some range left", () => {
+  it('Check there is some range left', () => {
     assert.isArray(result);
-    const expectedResult = [{"start":"2012-08-19T16:00:00.000Z","end":"2012-08-20T04:00:00.000Z"}]
+    const expectedResult = [{ start: '2012-08-19T16:00:00.000Z', end: '2012-08-20T04:00:00.000Z' }];
     assert.equal(JSON.stringify(result), JSON.stringify(expectedResult));
   });
 });
@@ -397,6 +398,47 @@ describe('Compare schedules with overlap on a weekend, on a DST switch', () => {
         .get('/oncalls')
         .query(true)
         .replyWithFile(200, `${__dirname}/fixtures/dst-entries-cross.json`);
+
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
+        if (!res) {
+          return done(new Error('Check failed'));
+        }
+        return pd.processSchedulesFromConfig((err, msg) => {
+          if (err) { return done(err); }
+          message = msg;
+          return done(err);
+        });
+      });
+    });
+  });
+
+  return it('Check that there are no returned messages', () => {
+    assert.isArray(message);
+    return assert.isEmpty(message);
+  });
+});
+
+describe('Compare schedules with overlap on a weekend, on a DST switch - 2', () => {
+  let message = null;
+
+  before((done) => {
+    config.setupConfig(configDst2, (configErr) => {
+      if (configErr) { return done(configErr); }
+      nock('https://api.pagerduty.com/')
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/dst-2-entries.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/dst-2-entries-cross.json`);
 
       return pd.checkSchedulesIds((checkErr, res) => {
         if (checkErr) { return done(checkErr); }

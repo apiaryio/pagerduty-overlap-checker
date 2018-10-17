@@ -4,7 +4,7 @@
 
 # NodeJS supported versions
 
-- 6.x (LTS)
+- 8.x (LTS)
 
 # Pager Duty Overlap Checker
 
