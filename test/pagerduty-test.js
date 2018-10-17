@@ -9,6 +9,7 @@ const configPath = `${__dirname}/fixtures/config.json`;
 const configWithDaysPath = `${__dirname}/fixtures/config-days.json`;
 const configWrongPath = `${__dirname}/fixtures/config-wrong.json`;
 const configDst = `${__dirname}/fixtures/config-dst.json`;
+const configDst2 = `${__dirname}/fixtures/config-dst-2.json`;
 const configOverTimeUntil = `${__dirname}/fixtures/config-over-time-until.json`;
 const configBeforeTimeSince = `${__dirname}/fixtures/config-before-time-since.json`;
 
@@ -397,6 +398,42 @@ describe('Compare schedules with overlap on a weekend, on a DST switch', () => {
         .get('/oncalls')
         .query(true)
         .replyWithFile(200, `${__dirname}/fixtures/dst-entries-cross.json`);
+
+      return pd.checkSchedulesIds((checkErr, res) => {
+        if (checkErr) { return done(checkErr); }
+        if (!res) {
+          return done(new Error('Check failed'));
+        }
+        return pd.processSchedulesFromConfig((err, msg) => {
+          if (err) { return done(err); }
+          message = msg;
+          return done(err);
+        });
+      });
+    });
+  });
+})
+
+describe('Compare schedules with overlap on a weekend, on a DST switch - 2', () => {
+  let message = null;
+
+  before((done) => {
+    config.setupConfig(configDst2, (configErr) => {
+      if (configErr) { return done(configErr); }
+      nock('https://api.pagerduty.com/')
+        .get('/schedules')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/schedules.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/dst-2-entries.json`);
+
+      nock('https://api.pagerduty.com/')
+        .get('/oncalls')
+        .query(true)
+        .replyWithFile(200, `${__dirname}/fixtures/dst-2-entries-cross.json`);
 
       return pd.checkSchedulesIds((checkErr, res) => {
         if (checkErr) { return done(checkErr); }
