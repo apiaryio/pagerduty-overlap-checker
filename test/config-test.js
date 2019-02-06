@@ -1,6 +1,6 @@
 const { assert } = require('chai');
-const config = require('../src/config');
 const nconf = require('nconf');
+const config = require('../src/config');
 
 describe('Get config for PagerDuty Overrides', () => {
   it('NODE_ENV isn\'t set', () => assert.equal(nconf.get('NODE_ENV'), undefined));
@@ -9,9 +9,7 @@ describe('Get config for PagerDuty Overrides', () => {
 });
 
 describe('Setup config and get config', () => {
-  before(done =>
-    config.setupConfig(`${__dirname}/fixtures/config.json`, err => done(err))
-  );
+  before(done => config.setupConfig(`${__dirname}/fixtures/config.json`, err => done(err)));
 
   it('NODE_ENV isn\'t set', () => assert.equal(nconf.get('NODE_ENV'), undefined));
 

@@ -1,5 +1,5 @@
 module.exports = {
-  'extends': 'airbnb',
+  'extends': 'airbnb-base',
   'env': {
     'node': true,
     'mocha': true,
@@ -16,8 +16,9 @@ module.exports = {
       functions: 'never', // This is not supported in Node without Babel transform
     }],
     'import/no-unresolved': [
-      2, 
+      2,
       { caseSensitive: false }
-    ]
+    ],
+    'prefer-destructuring': 'off',
   }
 };

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 const program = require('commander');
+const fs = require('fs');
 const pjson = require('../package.json');
 const config = require('../src/config');
-const fsAccess = require('fs-access');
 const pd = require('../src/pagerduty');
 
 function runCheck(configFile) {
-  fsAccess(configFile, (err) => {
+  fs.access(configFile, fs.constants.F_OK, (err) => {
     if (err) throw err;
     config.setupConfig(configFile, (configErr) => {
       if (configErr) {

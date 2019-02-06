@@ -1,9 +1,9 @@
 const async = require('async');
-const moment = require('./config').moment;
 
 const nconf = require('nconf');
 const _ = require('lodash');
 const debug = require('debug')('pagerduty-overrides:pagerduty');
+const moment = require('./config').moment;
 const notify = require('./notify');
 const pdApi = require('./pagerduty-api');
 
@@ -113,8 +113,7 @@ function subtract(originalRange, rangesToSubtract) {
       remaining = _.flatten(remaining);
     });
     return _.compact(remaining);
-  })
-  );
+  }));
 }
 
 function getExcludeRanges(excludeDays, timeSince, timeUntil, timezone) {
@@ -251,8 +250,8 @@ function processSchedulesFromConfig(done) {
   debug('configSchedules:', configSchedules.length);
   return async.forEach(configSchedules, (processedConfig, cb) => {
     debug('Process schedule:');
-    return async.mapSeries(processedConfig.SCHEDULE, (i, next) => getSchedule(i, next)
-      , (mapErr, results) => {
+    return async.mapSeries(processedConfig.SCHEDULE, (i, next) => getSchedule(i, next),
+      (mapErr, results) => {
         if (mapErr) { return cb(mapErr); }
         if (results) {
           return processSchedules(results, processedConfig.EXCLUSION_DAYS, (err, message) => {
@@ -269,8 +268,8 @@ function processSchedulesFromConfig(done) {
         }
         return cb(new Error('No schedule to process.'));
       });
-  }
-    , (err) => {
+  },
+  (err) => {
     if (err) { return done(err); }
     return done(null, messages);
   });

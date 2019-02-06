@@ -112,8 +112,8 @@ function formatMessage(messages, option = 'plain') {
         if (acc[curr.userId].messages == null) { acc[curr.userId].messages = []; }
         acc[curr.userId].messages.push(`${curr.schedules[0]} and ${curr.schedules[1]} (from ${toISOstring(curr.overlapStart)} to ${toISOstring(curr.overlapEnd)})`);
         return acc;
-      }
-        , {});
+      },
+      {});
       break;
     default:
       console.error(`Unsupported option ${option} used.`);
