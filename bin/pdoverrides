@@ -6,7 +6,8 @@ const pjson = require('../package.json');
 const config = require('../src/config');
 const pd = require('../src/pagerduty');
 
-function runCheck(configFile) {
+function runCheck(cmd) {
+  const configFile = cmd.parent.config;
   fs.access(configFile, fs.constants.F_OK, (err) => {
     if (err) throw err;
     config.setupConfig(configFile, (configErr) => {
@@ -46,7 +47,7 @@ program
 program
   .version(pjson.version)
   .usage('check --config <path/to/config.json>')
-  .option('-c, --config', 'Path to config.json')
+  .option('-c, --config <path-to-config>', 'Path to config.json')
   .parse(process.argv);
 
 // default help
