@@ -20,5 +20,7 @@ module.exports = {
       { caseSensitive: false }
     ],
     'prefer-destructuring': 'off',
+    'no-template-curly-in-string': 'off',
+    'consistent-return': 'off'
   }
 };

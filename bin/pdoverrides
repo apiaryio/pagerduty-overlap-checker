@@ -5,12 +5,15 @@ const fs = require('fs');
 const pjson = require('../package.json');
 const config = require('../src/config');
 const pd = require('../src/pagerduty');
+const reminder = require('../src/reminder');
 
 function runCheck(cmd) {
-  const configFile = cmd.parent.config;
-  fs.access(configFile, fs.constants.F_OK, (err) => {
+  if (cmd.config == null) {
+    cmd.help();
+  }
+  fs.access(cmd.config, fs.constants.F_OK, (err) => {
     if (err) throw err;
-    config.setupConfig(configFile, (configErr) => {
+    config.setupConfig(cmd.config, (configErr) => {
       if (configErr) {
         console.error(configErr);
         process.exit(1);
@@ -39,15 +42,56 @@ function runCheck(cmd) {
   });
 }
 
+function sendReminder(cmd){
+  if (cmd.schedule == null || 
+    cmd.escalationPolicy == null ||
+    cmd.channel == null ||
+    cmd.config == null) {
+      cmd.help()
+    }
+  fs.access(cmd.config, fs.constants.F_OK, (err) => {
+    if (err) throw err;
+    config.setupConfig(cmd.config, (configErr) => {
+      if (configErr) {
+        console.error(configErr);
+        process.exit(1);
+      }
+      const handoverData = {
+        schedule: cmd.schedule,
+        escalationPolicy: cmd.escalationPolicy,
+        templateText: cmd.templateText,
+        slackChannel: cmd.channel
+      }
+      reminder.sendMessage(handoverData, cmd.type, (err) => {
+        if (err) {
+          console.error(err);
+          process.exit(1);
+        }
+      });
+    });
+  });
+}
+
 program
   .command('check')
   .description('Check PagerDuty Overlaps')
+  .usage('check --config <path/to/config.json>')
+  .option('-c, --config <path-to-config>', 'Path to config.json')
   .action(runCheck);
 
 program
-  .version(pjson.version)
-  .usage('check --config <path/to/config.json>')
+  .command('reminder')
+  .description('Send schedule reminder message')
   .option('-c, --config <path-to-config>', 'Path to config.json')
+  .option('-s, --schedule <schedule-id>', 'PagerDuty schedule ID')
+  .option('-e, --escalation-policy <escalation-policy-id>', 'PagerDuty escalation policy ID')
+  .option('-n, --channel <slack-channel-name>', 'Slack channel to send the handover message to')
+  .option('-x, --template-text <template-text>', 'Template text')
+  .option('-t, --type <reminder-type>', 'Type of the reminder message (reminder/handover), default: handover')
+  .action(sendReminder);
+
+  program
+  .version(pjson.version)
   .parse(process.argv);
 
 // default help

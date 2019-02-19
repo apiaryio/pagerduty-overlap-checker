@@ -8,7 +8,7 @@ const notify = require('./notify');
 const pdApi = require('./pagerduty-api');
 
 // Get schedule for ID and 2 weeks
-function getSchedule(id, cb) {
+function getSchedule(id, extraOptions, cb) {
   const timezone = nconf.get('TIMEZONE');
   const timeUntil = moment.tz(nconf.get('TIME_UNTIL'), timezone);
   const timeSince = moment.tz(nconf.get('TIME_SINCE'), timezone);
@@ -21,6 +21,9 @@ function getSchedule(id, cb) {
     },
   };
 
+  if (extraOptions) {
+    _.merge(scheduleOpts, extraOptions);
+  }
 
   return pdApi.send('/oncalls', scheduleOpts, (err, res, body) => {
     if (err) {
@@ -250,7 +253,7 @@ function processSchedulesFromConfig(done) {
   debug('configSchedules:', configSchedules.length);
   return async.forEach(configSchedules, (processedConfig, cb) => {
     debug('Process schedule:');
-    return async.mapSeries(processedConfig.SCHEDULE, (i, next) => getSchedule(i, next),
+    return async.mapSeries(processedConfig.SCHEDULE, (i, next) => getSchedule(i, null, next),
       (mapErr, results) => {
         if (mapErr) { return cb(mapErr); }
         if (results) {
@@ -275,6 +278,48 @@ function processSchedulesFromConfig(done) {
   });
 }
 
+function getEngineersOncall(scheduleId, escalationPolicyId, done) {
+  const extraOptions = {
+    qs: {
+      'include[]': 'users',
+      'escalation_policy_ids[]': escalationPolicyId,
+    },
+  };
+  getSchedule(scheduleId, extraOptions, (err, scheduleInfo) => {
+    if (err) { return done(err); }
+    const timeToCheck = moment(nconf.get('TIME_SINCE')) || moment();
+    let currentOncall; let
+      nextOncall;
+    currentOncall = {
+      end: moment(),
+    };
+    scheduleInfo.entries.forEach((entry) => {
+      const oncall = {
+        email: entry.user.email,
+        start: moment(entry.start),
+        end: moment(entry.end),
+      };
+
+      if (timeToCheck.isBetween(oncall.start, oncall.end)) {
+        currentOncall = oncall;
+        return;
+      }
+      if (nextOncall == null && oncall.start.isSameOrAfter(currentOncall.end)) {
+        nextOncall = oncall;
+        return;
+      }
+      if (nextOncall && oncall.start.isBetween(currentOncall.end, nextOncall.start)) {
+        nextOncall = oncall;
+      }
+    });
+    return done(null, {
+      current: currentOncall,
+      next: nextOncall,
+    });
+  });
+}
+
+
 module.exports = {
   getSchedulesIds,
   checkSchedulesIds,
@@ -282,4 +327,5 @@ module.exports = {
   processSchedulesFromConfig,
   sendNotification,
   subtract,
+  getEngineersOncall,
 };
