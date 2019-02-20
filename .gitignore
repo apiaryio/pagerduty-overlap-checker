@@ -4,6 +4,7 @@ node_modules
 *.log
 !test/fixtures/config.json
 config.json
+config-test.json
 /src-cov
 /lcov
 cov.info

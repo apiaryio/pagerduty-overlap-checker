@@ -1,0 +1,129 @@
+{
+  "total": null,
+  "oncalls": [
+    {
+      "escalation_policy": {
+        "id": "PIYVU5O",
+        "type": "escalation_policy_reference",
+        "summary": "Escalation Policy eaque ipsam porro",
+        "self": "https://api.pagerduty.com/escalation_policies/PIYVU5O",
+        "html_url": "https://apidocs.pagerduty.com/escalation_policies/PIYVU5O"
+      },
+      "escalation_level": 1,
+      "schedule": {
+        "id": "P538IZH",
+        "type": "schedule_reference",
+        "summary": "Schedule a quasi illum",
+        "self": "https://api.pagerduty.com/schedules/P538IZH",
+        "html_url": "https://apidocs.pagerduty.com/schedules/P538IZH"
+      },
+      "user": {
+        "summary": "Gregory",
+        "name": "Gregory",
+        "email": "gregory@test.com",
+        "id": "PRT2T0A",
+        "type": "user_reference",
+        "self": "https://api.pagerduty.com/escalation_policies/PRT2T0",
+        "html_url": "https://apiary.pagerduty.com/escalation_policies/PRT2T0",
+        "time_zone": "Europe/Prague",
+        "color": "orange-red",
+        "billed": true,
+        "role": "user",
+        "invitation_sent": false,
+        "job_title": null,
+        "teams": [
+            {
+                "id": "P109Y5D",
+                "type": "team_reference",
+                "summary": "Testing Team",
+                "self": "https://api.pagerduty.com/teams/P109Y5D",
+                "html_url": "https://oracle.pagerduty.com/teams/P109Y5D"
+            }
+        ],
+        "contact_methods": [
+            {
+                "id": "POTCBTE",
+                "type": "email_contact_method_reference",
+                "summary": "Default",
+                "self": "https://api.pagerduty.com/users/PRT2T0/contact_methods/POTCBTE",
+                "html_url": null
+            }
+        ],
+        "notification_rules": [
+            {
+                "id": "PTJGSLT",
+                "type": "assignment_notification_rule_reference",
+                "summary": "0 minutes: channel POTCBTE",
+                "self": "https://api.pagerduty.com/users/PRT2T0/notification_rules/PTJGSLT",
+                "html_url": null
+            }
+        ],
+        "coordinated_incidents": []
+      },
+      "end": "2019-02-13T18:00:00+01:00",
+      "start": "2019-02-12T18:00:00+01:00"
+    },
+    {
+      "escalation_policy": {
+        "id": "PIYVU5O",
+        "type": "escalation_policy_reference",
+        "summary": "Escalation Policy eaque ipsam porro",
+        "self": "https://api.pagerduty.com/escalation_policies/PIYVU5O",
+        "html_url": "https://apidocs.pagerduty.com/escalation_policies/PIYVU5O"
+      },
+      "escalation_level": 1,
+      "schedule": {
+        "id": "P538IZH",
+        "type": "schedule_reference",
+        "summary": "Schedule a quasi illum",
+        "self": "https://api.pagerduty.com/schedules/P538IZH",
+        "html_url": "https://apidocs.pagerduty.com/schedules/P538IZH"
+      },
+      "user": {
+        "summary": "Gabriel",
+        "name": "Gabriel",
+        "email": "gabriel@test.com",
+        "id": "PYBBUSQ",
+        "type": "user_reference",
+        "self": "https://api.pagerduty.com/escalation_policies/PYBBUSQ",
+        "html_url": "https://apiary.pagerduty.com/escalation_policies/PYBBUSQ",
+        "time_zone": "Europe/Prague",
+        "color": "orange-red",
+        "billed": true,
+        "role": "user",
+        "invitation_sent": false,
+        "job_title": null,
+        "teams": [
+            {
+                "id": "P109Y5D",
+                "type": "team_reference",
+                "summary": "Testing Team",
+                "self": "https://api.pagerduty.com/teams/P109Y5D",
+                "html_url": "https://oracle.pagerduty.com/teams/P109Y5D"
+            }
+        ],
+        "contact_methods": [
+            {
+                "id": "POTCBTE",
+                "type": "email_contact_method_reference",
+                "summary": "Default",
+                "self": "https://api.pagerduty.com/users/PRT2T0/contact_methods/POTCBTE",
+                "html_url": null
+            }
+        ],
+        "notification_rules": [
+            {
+                "id": "PTJGSLT",
+                "type": "assignment_notification_rule_reference",
+                "summary": "0 minutes: channel POTCBTE",
+                "self": "https://api.pagerduty.com/users/PRT2T0/notification_rules/PTJGSLT",
+                "html_url": null
+            }
+        ],
+        "coordinated_incidents": [],
+      },
+      "end": "2019-02-12T18:00:00+01:00",
+      "start": "2019-02-11T18:00:00+01:00"
+    }
+  ]
+}
