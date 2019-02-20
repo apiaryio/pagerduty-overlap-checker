@@ -20,13 +20,16 @@ function sendFromTemplate(slackChannel, templateText, templateData, cb) {
     if (err) { return cb(err); }
     const messageText = formatMessageFromTemplate(templateText, templateData);
     slackApi.sendSlackMessage(slackChannel, messageText, (sendError) => {
-      if (err) { return cb(sendError); }
+      if (sendError) { return cb(sendError); }
       return cb();
     });
   });
 }
 
 function sendMessage(data, type, cb) {
+  if (!data.schedule || !data.escalationPolicy) {
+    return cb(new Error("Missing schedule ID or escalation policy ID!"));
+  }
   pagerduty.getEngineersOncall(data.schedule, data.escalationPolicy, (err, oncallEngineers) => {
     if (err) { return cb(err); }
     if (oncallEngineers == null) { return cb(new Error('No oncall engineers found!')); }
@@ -40,8 +43,8 @@ function sendMessage(data, type, cb) {
       templateText = templateText || nconf.get('HANDOVER_TEMPLATE') || "<@${current}> don't forget to handover your shift to <@${next}>\n";
     }
 
-    sendFromTemplate(data.slackChannel, templateText, templateData, (sendErr) => {
-      if (err) { return cb(sendErr); }
+    sendFromTemplate(data.slackChannel || nconf.get('SLACK_CHANNEL'), templateText, templateData, (sendErr) => {
+      if (sendErr) { return cb(new Error(sendErr.data.error)); }
       return cb();
     });
   });

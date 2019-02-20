@@ -7,8 +7,12 @@ const config = require('../src/config');
 const pd = require('../src/pagerduty');
 const reminder = require('../src/reminder');
 
-function runCheck(cmd) {
-  if (cmd.config == null) {
+function runCheck(arg, cmd){
+  if (!cmd) {
+    // if an argument is supplied to the function, we get arg, cmd arguments; otherwise, just cmd
+    cmd = arg;
+  }
+  if (!cmd.config) {
     cmd.help();
   }
   fs.access(cmd.config, fs.constants.F_OK, (err) => {
@@ -42,13 +46,16 @@ function runCheck(cmd) {
   });
 }
 
-function sendReminder(cmd){
-  if (cmd.schedule == null || 
-    cmd.escalationPolicy == null ||
-    cmd.channel == null ||
-    cmd.config == null) {
-      cmd.help()
-    }
+function sendReminder(arg, cmd){
+  if (!cmd) {
+    // if an argument is supplied to the function, we get arg, cmd arguments; otherwise, just cmd
+    cmd = arg;
+  }
+  if (!cmd.schedule ||
+    !cmd.escalationPolicy ||
+    !cmd.config) {
+      cmd.help();
+  }
   fs.access(cmd.config, fs.constants.F_OK, (err) => {
     if (err) throw err;
     config.setupConfig(cmd.config, (configErr) => {
