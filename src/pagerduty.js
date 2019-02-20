@@ -278,7 +278,7 @@ function processSchedulesFromConfig(done) {
   });
 }
 
-function getEngineersOncall(scheduleId, escalationPolicyId, done) {
+function getEngineersOncallForHandover(scheduleId, escalationPolicyId, done) {
   const extraOptions = {
     qs: {
       'include[]': 'users',
@@ -327,5 +327,5 @@ module.exports = {
   processSchedulesFromConfig,
   sendNotification,
   subtract,
-  getEngineersOncall,
+  getEngineersOncallForHandover,
 };

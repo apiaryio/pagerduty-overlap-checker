@@ -28,13 +28,13 @@ function sendFromTemplate(slackChannel, templateText, templateData, cb) {
 
 function sendMessage(data, type, cb) {
   if (!data.schedule || !data.escalationPolicy) {
-    return cb(new Error("Missing schedule ID or escalation policy ID!"));
+    return cb(new Error('Missing schedule ID or escalation policy ID!'));
   }
-  pagerduty.getEngineersOncall(data.schedule, data.escalationPolicy, (err, oncallEngineers) => {
+  pagerduty.getEngineersOncallForHandover(data.schedule, data.escalationPolicy, (err, result) => {
     if (err) { return cb(err); }
-    if (oncallEngineers == null) { return cb(new Error('No oncall engineers found!')); }
+    if (result == null) { return cb(new Error('No oncall engineers found!')); }
     const templateData = {
-      oncallEngineers,
+      oncallEngineers: result,
     };
     let templateText = data.templateText;
     if (type === 'reminder') {
