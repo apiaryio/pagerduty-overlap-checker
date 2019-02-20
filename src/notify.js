@@ -122,10 +122,9 @@ function send(options, message, cb) {
         const slackChannel = options.SLACK.CHANNEL || nconf.get('SLACK_CHANNEL');
         return slackApi.sendSlackMessage(slackChannel, slackMessage, next);
       }
-      else {
-        debug('No Slack notification configured');
-        return next();
-      }
+
+      debug('No Slack notification configured');
+      return next();
     },
     function sendPagerDuty(next) {
       if (!((options.PAGERDUTY && options.PAGERDUTY.PAGERDUTY_TOKEN) || options.PAGERDUTY_TOKEN)) {
