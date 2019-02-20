@@ -11,7 +11,7 @@
     "lint": "./node_modules/.bin/commitlint --from=master && ./node_modules/.bin/eslint ./src ./test",
     "coverage": "./scripts/cov",
     "coveralls": "npm run coverage && cat ./cov.info | ./node_modules/.bin/coveralls",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "semantic-release": "./node_modules/.bin/semantic-release"
   },
   "author": "Apiary Inc <support@apiary.io>",
   "license": "MIT",
@@ -42,6 +42,7 @@
     "@commitlint/cli": "7.4.0",
     "@commitlint/config-conventional": "7.3.1",
     "@commitlint/travis-cli": "7.4.0",
+    "@semantic-release/npm": "^5.1.4",
     "coveralls": "~3.0.2",
     "eslint": "^5.13.0",
     "eslint-config-airbnb-base": "13.1.0",
