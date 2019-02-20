@@ -1,7 +1,8 @@
-const Slack = require('node-slackr');
 const async = require('async');
 const debug = require('debug')('pagerduty-overrides:notifications');
+const nconf = require('nconf');
 const pdApi = require('./pagerduty-api');
+const slackApi = require('./slack-api');
 
 function toISOstring(moment) {
   return moment.format('ddd, D MMM YYYY HH:mm:ss z');
@@ -70,21 +71,6 @@ function createPagerDutyIncident(options, message, cb) {
   });
 }
 
-// https://www.npmjs.com/package/node-slackr
-function createSlackMessage(options, message, cb) {
-  if (options.webhookUrl) {
-    const slack = new Slack(options.webhookUrl);
-    return slack.notify(message, (err, result) => {
-      if (err) {
-        console.error('SLACK_SEND_MESSAGE_FAILED:', err);
-        return cb(err);
-      }
-      return cb(null, result);
-    });
-  }
-  return cb(new Error('Missing Slack webhook URL.'));
-}
-
 // Input is array of messages is we have more overlaps
 function formatMessage(messages, option = 'plain') {
   let outputMessage;
@@ -130,20 +116,16 @@ function send(options, message, cb) {
 
   return async.parallel([
     function sendSlack(next) {
-      if (options.SLACK || (options.SLACK_WEBHOOK_URL)) {
-        debug('Found Slack webhook, sending a notification');
-        const slackMessage = {};
-        const slackOptions = {};
-        slackMessage.text = formatMessage(message, 'markdown');
-        if (options.SLACK) {
-          slackMessage.channel = options.SLACK.CHANNEL;
-          slackOptions.webhookUrl = options.SLACK.SLACK_WEBHOOK_URL;
-        }
-        if (!slackOptions.webhookUrl) { slackOptions.webhookUrl = options.SLACK_WEBHOOK_URL; }
-        return createSlackMessage(slackOptions, slackMessage, next);
+      if (options.SLACK) {
+        debug('Sending Slack notification');
+        const slackMessage = formatMessage(message, 'markdown');
+        const slackChannel = options.SLACK.CHANNEL || nconf.get('SLACK_CHANNEL');
+        return slackApi.sendSlackMessage(slackChannel, slackMessage, next);
       }
-      debug('No Slack webhook defined');
-      return next();
+      else {
+        debug('No Slack notification configured');
+        return next();
+      }
     },
     function sendPagerDuty(next) {
       if (!((options.PAGERDUTY && options.PAGERDUTY.PAGERDUTY_TOKEN) || options.PAGERDUTY_TOKEN)) {

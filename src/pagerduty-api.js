@@ -21,7 +21,7 @@ function send(endpointPath, overrideOptions, cb) {
     options = {};
   }
 
-  _.extend(defaultOptions, options);
+  _.merge(defaultOptions, options);
 
   if (!defaultOptions.headers) { defaultOptions.headers = []; }
   if (!defaultOptions.headers.Authorization) { defaultOptions.headers.Authorization = `Token token=${nconf.get('PAGERDUTY_READ_ONLY_TOKEN')}`; }
