@@ -32,7 +32,7 @@ function sendMessage(data, type, cb) {
   }
   pagerduty.getEngineersOncallForHandover(data.schedule, data.escalationPolicy, (err, result) => {
     if (err) { return cb(err); }
-    if (result == null) { return cb(new Error('No oncall engineers found!')); }
+    if (!result) { return cb(new Error('No oncall engineers found!')); }
     const templateData = {
       oncallEngineers: result,
     };
