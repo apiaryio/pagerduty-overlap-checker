@@ -5,8 +5,8 @@ const slackApi = require('./slack-api');
 const pagerduty = require('./pagerduty');
 
 function formatMessageFromTemplate(templateText, data) {
-  const current = nconf.get(`slackUsers:${data.oncallEngineers.current.email}`);
-  const next = nconf.get(`slackUsers:${data.oncallEngineers.next.email}`);
+  const current = nconf.get(`slackUsers:${data.oncallEngineers.current.email}`) || data.oncallEngineers.current.name;
+  const next = nconf.get(`slackUsers:${data.oncallEngineers.next.email}`) || data.oncallEngineers.next.name;
   const compiled = _.template(templateText);
   const outputMessage = compiled({ current, next });
   debug('Reminder - formatMessage: ', outputMessage);
