@@ -295,6 +295,7 @@ function getEngineersOncallForHandover(scheduleId, escalationPolicyId, done) {
     };
     scheduleInfo.entries.forEach((entry) => {
       const oncall = {
+        name: entry.user.name,
         email: entry.user.email,
         start: moment(entry.start),
         end: moment(entry.end),
