@@ -6,6 +6,10 @@
   "bin": {
     "pdoverrides": "bin/pdoverrides"
   },
+  "engines": {
+    "node": ">=8.12.0",
+    "npm": ">=6.4.1"
+  },
   "scripts": {
     "test": "./node_modules/.bin/mocha",
     "lint": "./node_modules/.bin/commitlint --from=master && ./node_modules/.bin/eslint ./src ./test",
