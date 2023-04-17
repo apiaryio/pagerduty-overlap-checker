@@ -29,7 +29,7 @@
     "check"
   ],
   "dependencies": {
-    "@slack/client": "^4.9.0",
+    "@slack/client": "^5.0.2",
     "ajv": "^6.8.1",
     "async": "2.6.1",
     "commander": "2.19.0",
